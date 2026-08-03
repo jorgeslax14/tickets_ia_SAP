@@ -1,0 +1,15 @@
+# Python
+venv/
+__pycache__/
+*.pyc
+
+# Node
+node_modules/
+build/
+
+# Env / secrets
+.env
+.env.local
+
+# OS
+Thumbs.db
