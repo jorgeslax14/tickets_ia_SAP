@@ -12,4 +12,6 @@ export const createTicket = (message, createdBy) =>
 export const updateTicketStatus = (ticketId, status) =>
   API.put(`/tickets/${ticketId}`, { status });
 
+export const getTicketHistory = () => API.get("/tickets/history");
+
 export default API;

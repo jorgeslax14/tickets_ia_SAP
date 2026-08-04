@@ -74,6 +74,49 @@ def get_tickets():
         return {"success": False, "message": str(e)}
 
 
+@router.get("/tickets/history")
+def get_ticket_history():
+    try:
+        conn = get_connection()
+        cursor = conn.cursor(dictionary=True)
+
+        cursor.execute("SELECT * FROM ticket_history ORDER BY created_at DESC")
+        rows = cursor.fetchall()
+
+        cursor.close()
+        conn.close()
+
+        history = []
+        for row in rows:
+            try:
+                parsed_action = json.loads(row["action"])
+            except (TypeError, json.JSONDecodeError):
+                parsed_action = {"event": row["action"], "ticket": {}}
+
+            history.append({
+                "id": row["id"],
+                "ticket_id": row["ticket_id"],
+                "archived_at": row["created_at"],
+                "event": parsed_action.get("event"),
+                "ticket": parsed_action.get("ticket", {}),
+            })
+
+        return {"success": True, "data": history}
+
+    except Exception as e:
+        return {"success": False, "message": str(e)}
+
+
+def _archive_and_delete_ticket(cursor, ticket: dict):
+    """Guarda una foto del ticket en ticket_history y lo borra de tickets."""
+    snapshot = json.dumps({"event": "DONE_DELETED", "ticket": ticket}, default=str)
+    cursor.execute(
+        "INSERT INTO ticket_history (ticket_id, action) VALUES (%s, %s)",
+        (ticket["id"], snapshot),
+    )
+    cursor.execute("DELETE FROM tickets WHERE id = %s", (ticket["id"],))
+
+
 @router.put("/tickets/{ticket_id}")
 def update_ticket_status(ticket_id: int, data: dict):
     new_status = data.get("status")
@@ -83,27 +126,38 @@ def update_ticket_status(ticket_id: int, data: dict):
             detail=f"'status' debe ser uno de {sorted(ALLOWED_STATUSES)}",
         )
 
+    conn = get_connection()
     try:
-        conn = get_connection()
-        cursor = conn.cursor()
+        cursor = conn.cursor(dictionary=True)
 
-        cursor.execute(
-            "UPDATE tickets SET status = %s WHERE id = %s",
-            (new_status, ticket_id),
-        )
-        conn.commit()
+        cursor.execute("SELECT * FROM tickets WHERE id = %s", (ticket_id,))
+        ticket = cursor.fetchone()
 
-        updated = cursor.rowcount > 0
-
-        cursor.close()
-        conn.close()
-
-        if not updated:
+        if not ticket:
             raise HTTPException(status_code=404, detail="Ticket no encontrado")
 
-        return {"success": True, "message": f"Ticket actualizado a {new_status}"}
+        if new_status == "DONE":
+            # Al finalizar, el ticket se archiva en ticket_history y se elimina
+            # de tickets (por eso desaparece del dashboard).
+            _archive_and_delete_ticket(cursor, ticket)
+            message = "Ticket finalizado y movido a ticket_history"
+        else:
+            cursor.execute(
+                "UPDATE tickets SET status = %s WHERE id = %s",
+                (new_status, ticket_id),
+            )
+            message = f"Ticket actualizado a {new_status}"
+
+        conn.commit()
+        cursor.close()
+
+        return {"success": True, "message": message}
 
     except HTTPException:
+        conn.rollback()
         raise
     except Exception as e:
+        conn.rollback()
         return {"success": False, "message": str(e)}
+    finally:
+        conn.close()

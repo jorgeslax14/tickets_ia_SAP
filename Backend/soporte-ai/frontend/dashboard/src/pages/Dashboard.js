@@ -1,6 +1,6 @@
 import React from "react";
 import { Box, Typography, Button } from "@mui/material";
-import TicketTable from "../components/TicketTable";
+import TicketsPanel from "../components/TicketsPanel";
 
 const Dashboard = ({ user, onLogout }) => {
   return (
@@ -15,7 +15,7 @@ const Dashboard = ({ user, onLogout }) => {
         </Box>
       </Box>
 
-      <TicketTable />
+      <TicketsPanel />
     </div>
   );
 };
