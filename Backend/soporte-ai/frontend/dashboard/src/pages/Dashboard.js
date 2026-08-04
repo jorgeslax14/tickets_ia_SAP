@@ -1,11 +1,20 @@
 import React from "react";
-import TicketList from "../components/TicketList";
+import { Box, Typography, Button } from "@mui/material";
 import TicketTable from "../components/TicketTable";
 
-const Dashboard = () => {
+const Dashboard = ({ user, onLogout }) => {
   return (
-    <div>
-      <h1>📊 Dashboard Soporte SAP</h1>
+    <div style={{ padding: "20px" }}>
+      <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <Typography variant="h4">📊 Dashboard Soporte SAP</Typography>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+          {user && <Typography variant="body1">Hola, {user}</Typography>}
+          <Button variant="outlined" size="small" onClick={onLogout}>
+            Cerrar sesión
+          </Button>
+        </Box>
+      </Box>
+
       <TicketTable />
     </div>
   );

@@ -1,7 +1,17 @@
-import openai
 import os
+import openai
+from dotenv import load_dotenv
 
-openai.api_key = "REDACTED-ROTATED-OPENAI-KEY"
+load_dotenv()
+
+openai.api_key = os.getenv("OPENAI_API_KEY")
+
+if not openai.api_key:
+    raise RuntimeError(
+        "OPENAI_API_KEY no está configurada. Define esta variable en un archivo .env "
+        "(ver .env.example) o en el entorno antes de iniciar el backend."
+    )
+
 
 def analyze_ticket(text: str):
     prompt = f"""

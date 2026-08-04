@@ -1,51 +1,58 @@
-from fastapi import APIRouter
+import json
+
+from fastapi import APIRouter, HTTPException
+
+from app.db.database import get_connection
 from app.services.ai_service import analyze_ticket
 from app.services.prioritization import calculate_priority
 from app.services.ticket_service import create_ticket_db
-from app.db.database import get_connection
-import json
 
 router = APIRouter()
 
+FALLBACK_ANALYSIS = {
+    "modulo": "FI",
+    "transaccion": "ZFI_PRUEBA",
+    "urgencia": 3,
+    "impacto": 3,
+}
+
+
 @router.post("/tickets")
 def create_ticket(data: dict):
-    message = data["message"]
+    message = data.get("message")
+    if not message:
+        raise HTTPException(status_code=400, detail="El campo 'message' es requerido")
 
-    # 🔹 1. IA
-    ai_raw = analyze_ticket(message)
+    created_by = data.get("created_by", "desconocido")
 
+    # 1. Análisis con IA (con fallback si la IA falla o responde algo no parseable)
     try:
-        parsed = json.loads(ai_raw)
-    except:
-        parsed = {
-            "modulo": "FI",
-            "transaccion": "ZFI_PRUEBA",
-            "urgencia": 3,
-            "impacto": 3,
-            "created_by":"Jorge"
-        }
+        parsed = json.loads(analyze_ticket(message))
+    except Exception:
+        parsed = FALLBACK_ANALYSIS
 
-    # 🔹 2. Prioridad
+    # 2. Prioridad
     priority = calculate_priority(
-        parsed["urgencia"],
-        parsed["impacto"]
+        parsed.get("urgencia", FALLBACK_ANALYSIS["urgencia"]),
+        parsed.get("impacto", FALLBACK_ANALYSIS["impacto"]),
     )
 
-    # 🔹 3. INSERT en MySQL
+    # 3. INSERT en MySQL
     ticket = create_ticket_db({
         "title": message[:50],
         "description": message,
-        "module": parsed["modulo"],
-        "transaction": parsed["transaccion"],
+        "module": parsed.get("modulo", FALLBACK_ANALYSIS["modulo"]),
+        "transaction": parsed.get("transaccion", FALLBACK_ANALYSIS["transaccion"]),
         "priority": priority,
-        "created_by":parsed["created_by"]
+        "created_by": created_by,
     })
 
     return {
         "status": "OK",
         "ticket_id": ticket.id,
-        "priority": priority
+        "priority": priority,
     }
+
 
 @router.get("/tickets")
 def get_tickets():
@@ -53,51 +60,41 @@ def get_tickets():
         conn = get_connection()
         cursor = conn.cursor(dictionary=True)
 
-        query = "SELECT * FROM tickets ORDER BY priority DESC"
-        cursor.execute(query)
-
+        cursor.execute("SELECT * FROM tickets ORDER BY priority DESC")
         tickets = cursor.fetchall()
 
         cursor.close()
         conn.close()
 
-        return {
-            "success": True,
-            "data": tickets
-        }
+        return {"success": True, "data": tickets}
 
     except Exception as e:
-        return {
-            "success": False,
-            "message": str(e)
-        }
+        return {"success": False, "message": str(e)}
 
-# 🔥 Actualizar estado del ticket
+
 @router.put("/tickets/{ticket_id}")
 def update_ticket_status(ticket_id: int):
     try:
         conn = get_connection()
         cursor = conn.cursor()
 
-        query = """
-            UPDATE tickets
-            SET status = 'IN_PROGRESS'
-            WHERE id = %s
-        """
-
-        cursor.execute(query, (ticket_id,))
+        cursor.execute(
+            "UPDATE tickets SET status = 'IN_PROGRESS' WHERE id = %s",
+            (ticket_id,),
+        )
         conn.commit()
+
+        updated = cursor.rowcount > 0
 
         cursor.close()
         conn.close()
 
-        return {
-            "success": True,
-            "message": "Ticket actualizado a IN_PROGRESS"
-        }
+        if not updated:
+            raise HTTPException(status_code=404, detail="Ticket no encontrado")
 
+        return {"success": True, "message": "Ticket actualizado a IN_PROGRESS"}
+
+    except HTTPException:
+        raise
     except Exception as e:
-        return {
-            "success": False,
-            "message": str(e)
-        }
+        return {"success": False, "message": str(e)}

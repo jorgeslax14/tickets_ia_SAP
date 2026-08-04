@@ -1,14 +1,15 @@
-import React from "react";
-import TicketTable from "./components/TicketTable";
-import TicketList from "./components/TicketList";
+import React, { useState } from "react";
+import Login from "./pages/Login";
+import Dashboard from "./pages/Dashboard";
 
 function App() {
-  return (
-    <div style={{ padding: "20px" }}>
-      <h1>🎯 Dashboard de Tickets</h1>
-      <TicketTable />  
-    </div>
-  );
+  const [user, setUser] = useState(null);
+
+  if (!user) {
+    return <Login onLogin={setUser} />;
+  }
+
+  return <Dashboard user={user} onLogout={() => setUser(null)} />;
 }
 
 export default App;

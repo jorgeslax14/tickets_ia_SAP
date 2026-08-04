@@ -1,12 +1,9 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
-import { Button } from "@mui/material";
-
-// MUI
 import {
   Table, TableBody, TableCell, TableContainer,
-  TableHead, TableRow, Paper, Chip, CircularProgress
+  TableHead, TableRow, Paper, Chip, CircularProgress, Button
 } from "@mui/material";
+import { getTickets, updateTicketStatus } from "../services/api";
 
 function getPriorityColor(priority) {
   if (priority >= 8) return "error";      // 🔴 Alto
@@ -31,34 +28,32 @@ export default function TicketTable() {
   const [tickets, setTickets] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  const fetchTickets = async () => {
+    try {
+      const res = await getTickets();
+      setTickets(res.data.data);
+    } catch (err) {
+      console.error("Error cargando tickets:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    axios.get("http://127.0.0.1:8000/tickets")
-      .then(res => {
-        setTickets(res.data.data); // 👈 importante
-        setLoading(false);
-      })
-      .catch(err => {
-        console.error(err, "ACA");
-        setLoading(false);
-      });
+    fetchTickets();
   }, []);
 
   const takeTicket = async (id) => {
     try {
-      await axios.put(`http://127.0.0.1:8000/tickets/${id}`);
-
-      // 🔄 Refrescar tickets después de actualizar
-      const res = await axios.get("http://127.0.0.1:8000/tickets");
-      setTickets(res.data.data);
-
+      await updateTicketStatus(id);
+      await fetchTickets();
     } catch (error) {
-      console.error(error);
+      console.error("Error actualizando ticket:", error);
     }
   };
 
   if (loading) return <CircularProgress />;
 
-  const filtered = tickets.filter(t => t.status === "OPEN");
   return (
     <TableContainer component={Paper} sx={{ mt: 4 }}>
       <Table>
@@ -77,7 +72,6 @@ export default function TicketTable() {
         </TableHead>
 
         <TableBody>
-
           {tickets.map(ticket => (
             <TableRow key={ticket.id}>
               <TableCell>{ticket.id}</TableCell>
@@ -85,20 +79,12 @@ export default function TicketTable() {
               <TableCell>{ticket.module}</TableCell>
               <TableCell>{ticket.transaction_code}</TableCell>
 
-              {/* PRIORIDAD */}
               <TableCell>
-                <Chip
-                  label={ticket.priority}
-                  color={getPriorityColor(ticket.priority)}
-                />
+                <Chip label={ticket.priority} color={getPriorityColor(ticket.priority)} />
               </TableCell>
 
-              {/* ESTADO */}
               <TableCell>
-                <Chip
-                  label={ticket.status}
-                  color={getStatusColor(ticket.status)}
-                />
+                <Chip label={ticket.status} color={getStatusColor(ticket.status)} />
               </TableCell>
 
               <TableCell>{ticket.created_by}</TableCell>
@@ -113,16 +99,13 @@ export default function TicketTable() {
                     onClick={() => takeTicket(ticket.id)}
                   >
                     Tomar
-                  </Button>)}
+                  </Button>
+                )}
               </TableCell>
-
-
-
             </TableRow>
           ))}
         </TableBody>
       </Table>
-
     </TableContainer>
   );
 }
