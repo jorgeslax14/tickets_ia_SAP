@@ -9,7 +9,7 @@ export const getTickets = () => API.get("/tickets");
 export const createTicket = (message, createdBy) =>
   API.post("/tickets", { message, created_by: createdBy });
 
-export const updateTicketStatus = (ticketId) =>
-  API.put(`/tickets/${ticketId}`);
+export const updateTicketStatus = (ticketId, status) =>
+  API.put(`/tickets/${ticketId}`, { status });
 
 export default API;

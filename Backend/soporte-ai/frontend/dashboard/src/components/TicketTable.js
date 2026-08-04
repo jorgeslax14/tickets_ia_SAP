@@ -24,6 +24,12 @@ function getStatusColor(status) {
   }
 }
 
+// Próximo estado y texto del botón de acción según el estado actual del ticket.
+const NEXT_STEP = {
+  OPEN: { status: "IN_PROGRESS", label: "Tomar" },
+  IN_PROGRESS: { status: "DONE", label: "Finalizar" },
+};
+
 export default function TicketTable() {
   const [tickets, setTickets] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -43,9 +49,9 @@ export default function TicketTable() {
     fetchTickets();
   }, []);
 
-  const takeTicket = async (id) => {
+  const advanceTicket = async (id, nextStatus) => {
     try {
-      await updateTicketStatus(id);
+      await updateTicketStatus(id, nextStatus);
       await fetchTickets();
     } catch (error) {
       console.error("Error actualizando ticket:", error);
@@ -91,14 +97,14 @@ export default function TicketTable() {
               <TableCell>{ticket.assigned_to}</TableCell>
 
               <TableCell>
-                {ticket.status === "OPEN" && (
+                {NEXT_STEP[ticket.status] && (
                   <Button
                     variant="contained"
                     color="primary"
                     size="small"
-                    onClick={() => takeTicket(ticket.id)}
+                    onClick={() => advanceTicket(ticket.id, NEXT_STEP[ticket.status].status)}
                   >
-                    Tomar
+                    {NEXT_STEP[ticket.status].label}
                   </Button>
                 )}
               </TableCell>

@@ -16,6 +16,8 @@ FALLBACK_ANALYSIS = {
     "impacto": 3,
 }
 
+ALLOWED_STATUSES = {"OPEN", "IN_PROGRESS", "DONE"}
+
 
 @router.post("/tickets")
 def create_ticket(data: dict):
@@ -73,14 +75,21 @@ def get_tickets():
 
 
 @router.put("/tickets/{ticket_id}")
-def update_ticket_status(ticket_id: int):
+def update_ticket_status(ticket_id: int, data: dict):
+    new_status = data.get("status")
+    if new_status not in ALLOWED_STATUSES:
+        raise HTTPException(
+            status_code=400,
+            detail=f"'status' debe ser uno de {sorted(ALLOWED_STATUSES)}",
+        )
+
     try:
         conn = get_connection()
         cursor = conn.cursor()
 
         cursor.execute(
-            "UPDATE tickets SET status = 'IN_PROGRESS' WHERE id = %s",
-            (ticket_id,),
+            "UPDATE tickets SET status = %s WHERE id = %s",
+            (new_status, ticket_id),
         )
         conn.commit()
 
@@ -92,7 +101,7 @@ def update_ticket_status(ticket_id: int):
         if not updated:
             raise HTTPException(status_code=404, detail="Ticket no encontrado")
 
-        return {"success": True, "message": "Ticket actualizado a IN_PROGRESS"}
+        return {"success": True, "message": f"Ticket actualizado a {new_status}"}
 
     except HTTPException:
         raise
