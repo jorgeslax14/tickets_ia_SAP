@@ -34,7 +34,7 @@ const NEXT_STEP = {
   IN_PROGRESS: { status: "DONE", label: "Finalizar" },
 };
 
-export default function TicketTable() {
+export default function TicketTable({ statusFilter, compact = false }) {
   const [tickets, setTickets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [assignments, setAssignments] = useState({});
@@ -69,6 +69,10 @@ export default function TicketTable() {
 
   if (loading) return <CircularProgress />;
 
+  const visibleTickets = statusFilter
+    ? tickets.filter(ticket => ticket.status === statusFilter)
+    : tickets;
+
   return (
     <TableContainer component={Paper} sx={{ mt: 4 }}>
       <Table>
@@ -80,14 +84,14 @@ export default function TicketTable() {
             <TableCell><b>Transacción</b></TableCell>
             <TableCell><b>Prioridad</b></TableCell>
             <TableCell><b>Estado</b></TableCell>
-            <TableCell><b>Creado por</b></TableCell>
-            <TableCell><b>Asignado a</b></TableCell>
+            {!compact && <TableCell><b>Creado por</b></TableCell>}
+            {!compact && <TableCell><b>Asignado a</b></TableCell>}
             <TableCell><b>Acciones</b></TableCell>
           </TableRow>
         </TableHead>
 
         <TableBody>
-          {tickets.map(ticket => (
+          {visibleTickets.map(ticket => (
             <TableRow key={ticket.id}>
               <TableCell>{ticket.id}</TableCell>
               <TableCell>{ticket.title}</TableCell>
@@ -102,24 +106,26 @@ export default function TicketTable() {
                 <Chip label={ticket.status} color={getStatusColor(ticket.status)} />
               </TableCell>
 
-              <TableCell>{ticket.created_by}</TableCell>
+              {!compact && <TableCell>{ticket.created_by}</TableCell>}
 
-              <TableCell>
-                <Select
-                  size="small"
-                  displayEmpty
-                  value={assignments[ticket.id] || ""}
-                  onChange={(e) => assignTicket(ticket.id, e.target.value)}
-                  sx={{ minWidth: 160 }}
-                >
-                  <MenuItem value="">
-                    <em>Sin asignar</em>
-                  </MenuItem>
-                  {ASSIGNEES.map((name) => (
-                    <MenuItem key={name} value={name}>{name}</MenuItem>
-                  ))}
-                </Select>
-              </TableCell>
+              {!compact && (
+                <TableCell>
+                  <Select
+                    size="small"
+                    displayEmpty
+                    value={assignments[ticket.id] || ""}
+                    onChange={(e) => assignTicket(ticket.id, e.target.value)}
+                    sx={{ minWidth: 160 }}
+                  >
+                    <MenuItem value="">
+                      <em>Sin asignar</em>
+                    </MenuItem>
+                    {ASSIGNEES.map((name) => (
+                      <MenuItem key={name} value={name}>{name}</MenuItem>
+                    ))}
+                  </Select>
+                </TableCell>
+              )}
 
               <TableCell>
                 {NEXT_STEP[ticket.status] && (

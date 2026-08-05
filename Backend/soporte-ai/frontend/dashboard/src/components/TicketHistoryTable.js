@@ -5,7 +5,7 @@ import {
 } from "@mui/material";
 import { getTicketHistory } from "../services/api";
 
-export default function TicketHistoryTable() {
+export default function TicketHistoryTable({ compact = false }) {
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -23,13 +23,22 @@ export default function TicketHistoryTable() {
       <Table>
         <TableHead>
           <TableRow>
-            <TableCell><b>Ticket ID</b></TableCell>
+            <TableCell><b>{compact ? "ID" : "Ticket ID"}</b></TableCell>
             <TableCell><b>Título</b></TableCell>
             <TableCell><b>Módulo SAP</b></TableCell>
             <TableCell><b>Transacción</b></TableCell>
             <TableCell><b>Prioridad</b></TableCell>
-            <TableCell><b>Evento</b></TableCell>
-            <TableCell><b>Archivado el</b></TableCell>
+            {compact ? (
+              <>
+                <TableCell><b>Estado</b></TableCell>
+                <TableCell><b>Acciones</b></TableCell>
+              </>
+            ) : (
+              <>
+                <TableCell><b>Evento</b></TableCell>
+                <TableCell><b>Archivado el</b></TableCell>
+              </>
+            )}
           </TableRow>
         </TableHead>
 
@@ -43,8 +52,17 @@ export default function TicketHistoryTable() {
               <TableCell>
                 {item.ticket?.priority != null && <Chip label={item.ticket.priority} />}
               </TableCell>
-              <TableCell>{item.event}</TableCell>
-              <TableCell>{item.archived_at}</TableCell>
+              {compact ? (
+                <>
+                  <TableCell><Chip label="DONE" color="success" /></TableCell>
+                  <TableCell>{/* ya finalizado, sin acciones disponibles */}</TableCell>
+                </>
+              ) : (
+                <>
+                  <TableCell>{item.event}</TableCell>
+                  <TableCell>{item.archived_at}</TableCell>
+                </>
+              )}
             </TableRow>
           ))}
         </TableBody>

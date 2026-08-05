@@ -1,11 +1,13 @@
 import React, { useState } from "react";
 import {
-  Box, Paper, TextField, Button, Typography, Alert
+  Box, Paper, TextField, Button, Typography, Alert,
+  FormControl, FormLabel, RadioGroup, FormControlLabel, Radio
 } from "@mui/material";
 
 const Login = ({ onLogin }) => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [role, setRole] = useState("usuario");
   const [error, setError] = useState("");
 
   const handleSubmit = (e) => {
@@ -18,7 +20,7 @@ const Login = ({ onLogin }) => {
 
     // TODO: validar contra el backend cuando exista autenticación real.
     setError("");
-    onLogin(username);
+    onLogin({ username, role });
   };
 
   return (
@@ -55,6 +57,18 @@ const Login = ({ onLogin }) => {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
+
+          <FormControl sx={{ mt: 1 }}>
+            <FormLabel>Rol</FormLabel>
+            <RadioGroup
+              row
+              value={role}
+              onChange={(e) => setRole(e.target.value)}
+            >
+              <FormControlLabel value="usuario" control={<Radio />} label="Usuario" />
+              <FormControlLabel value="administrador" control={<Radio />} label="Administrador" />
+            </RadioGroup>
+          </FormControl>
 
           {error && <Alert severity="error" sx={{ mt: 1 }}>{error}</Alert>}
 

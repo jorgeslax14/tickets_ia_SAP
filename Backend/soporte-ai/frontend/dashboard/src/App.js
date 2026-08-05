@@ -1,15 +1,22 @@
 import React, { useState } from "react";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
+import UserTicketsPage from "./pages/UserTicketsPage";
 
 function App() {
-  const [user, setUser] = useState(null);
+  const [session, setSession] = useState(null);
 
-  if (!user) {
-    return <Login onLogin={setUser} />;
+  if (!session) {
+    return <Login onLogin={setSession} />;
   }
 
-  return <Dashboard user={user} onLogout={() => setUser(null)} />;
+  const handleLogout = () => setSession(null);
+
+  if (session.role === "administrador") {
+    return <Dashboard user={session.username} onLogout={handleLogout} />;
+  }
+
+  return <UserTicketsPage user={session.username} onLogout={handleLogout} />;
 }
 
 export default App;
