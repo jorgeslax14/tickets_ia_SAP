@@ -1,9 +1,13 @@
 import { useEffect, useState } from "react";
 import {
   Table, TableBody, TableCell, TableContainer,
-  TableHead, TableRow, Paper, Chip, CircularProgress, Button
+  TableHead, TableRow, Paper, Chip, CircularProgress, Button,
+  Select, MenuItem
 } from "@mui/material";
 import { getTickets, updateTicketStatus } from "../services/api";
+
+// Nombres de prueba para el selector de "Asignado a" (solo UI, no persiste todavía).
+const ASSIGNEES = ["Jorge Velásquez", "María Gómez", "Carlos Pérez", "Laura Ramírez", "Andrés Torres"];
 
 function getPriorityColor(priority) {
   if (priority >= 8) return "error";      // 🔴 Alto
@@ -33,6 +37,11 @@ const NEXT_STEP = {
 export default function TicketTable() {
   const [tickets, setTickets] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [assignments, setAssignments] = useState({});
+
+  const assignTicket = (id, name) => {
+    setAssignments(prev => ({ ...prev, [id]: name }));
+  };
 
   const fetchTickets = async () => {
     try {
@@ -94,7 +103,23 @@ export default function TicketTable() {
               </TableCell>
 
               <TableCell>{ticket.created_by}</TableCell>
-              <TableCell>{ticket.assigned_to}</TableCell>
+
+              <TableCell>
+                <Select
+                  size="small"
+                  displayEmpty
+                  value={assignments[ticket.id] || ""}
+                  onChange={(e) => assignTicket(ticket.id, e.target.value)}
+                  sx={{ minWidth: 160 }}
+                >
+                  <MenuItem value="">
+                    <em>Sin asignar</em>
+                  </MenuItem>
+                  {ASSIGNEES.map((name) => (
+                    <MenuItem key={name} value={name}>{name}</MenuItem>
+                  ))}
+                </Select>
+              </TableCell>
 
               <TableCell>
                 {NEXT_STEP[ticket.status] && (
