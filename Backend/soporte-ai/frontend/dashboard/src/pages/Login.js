@@ -1,16 +1,16 @@
 import React, { useState } from "react";
 import {
-  Box, Paper, TextField, Button, Typography, Alert,
-  FormControl, FormLabel, RadioGroup, FormControlLabel, Radio
+  Box, Paper, TextField, Button, Typography, Alert
 } from "@mui/material";
+import { login } from "../services/api";
 
 const Login = ({ onLogin }) => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState("usuario");
   const [error, setError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!username || !password) {
@@ -18,9 +18,21 @@ const Login = ({ onLogin }) => {
       return;
     }
 
-    // TODO: validar contra el backend cuando exista autenticación real.
     setError("");
-    onLogin({ username, role });
+    setSubmitting(true);
+
+    try {
+      // Busca el usuario en la tabla `users` y toma su rol de ahí.
+      // Nota: todavía no hay columna de contraseña en la BD, así que esto
+      // no valida credenciales reales, solo identifica al usuario.
+      const res = await login(username);
+      const user = res.data.data;
+      onLogin({ username: user.name, role: user.role });
+    } catch (err) {
+      setError(err.response?.data?.detail || "No se pudo validar el usuario");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -58,27 +70,16 @@ const Login = ({ onLogin }) => {
             onChange={(e) => setPassword(e.target.value)}
           />
 
-          <FormControl sx={{ mt: 1 }}>
-            <FormLabel>Rol</FormLabel>
-            <RadioGroup
-              row
-              value={role}
-              onChange={(e) => setRole(e.target.value)}
-            >
-              <FormControlLabel value="usuario" control={<Radio />} label="Usuario" />
-              <FormControlLabel value="administrador" control={<Radio />} label="Administrador" />
-            </RadioGroup>
-          </FormControl>
-
           {error && <Alert severity="error" sx={{ mt: 1 }}>{error}</Alert>}
 
           <Button
             type="submit"
             variant="contained"
             fullWidth
+            disabled={submitting}
             sx={{ mt: 2 }}
           >
-            Ingresar
+            {submitting ? "Verificando..." : "Ingresar"}
           </Button>
         </form>
       </Paper>

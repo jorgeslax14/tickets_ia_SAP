@@ -12,7 +12,7 @@ function App() {
 
   const handleLogout = () => setSession(null);
 
-  if (session.role === "administrador") {
+  if (session.role === "admin") {
     return <Dashboard user={session.username} onLogout={handleLogout} />;
   }
 

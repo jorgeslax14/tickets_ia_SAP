@@ -3,6 +3,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 from app.api.tickets import router
+from app.api.users import router as users_router
 
 load_dotenv()
 
@@ -21,6 +22,7 @@ app.add_middleware(
 )
 
 app.include_router(router)
+app.include_router(users_router)
 
 
 @app.get("/")
