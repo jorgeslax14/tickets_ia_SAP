@@ -4,10 +4,7 @@ import {
   TableHead, TableRow, Paper, Chip, CircularProgress, Button,
   Select, MenuItem
 } from "@mui/material";
-import { getTickets, updateTicketStatus } from "../services/api";
-
-// Nombres de prueba para el selector de "Asignado a" (solo UI, no persiste todavía).
-const ASSIGNEES = ["Jorge Velásquez", "María Gómez", "Carlos Pérez", "Laura Ramírez", "Andrés Torres"];
+import { getTickets, updateTicketStatus, getUsersByRole, assignTicket as assignTicketRequest } from "../services/api";
 
 function getPriorityColor(priority) {
   if (priority >= 8) return "error";      // 🔴 Alto
@@ -36,12 +33,8 @@ const NEXT_STEP = {
 
 export default function TicketTable({ statusFilter, compact = false }) {
   const [tickets, setTickets] = useState([]);
+  const [assignableUsers, setAssignableUsers] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [assignments, setAssignments] = useState({});
-
-  const assignTicket = (id, name) => {
-    setAssignments(prev => ({ ...prev, [id]: name }));
-  };
 
   const fetchTickets = async () => {
     try {
@@ -56,7 +49,23 @@ export default function TicketTable({ statusFilter, compact = false }) {
 
   useEffect(() => {
     fetchTickets();
+
+    if (!compact) {
+      getUsersByRole("user")
+        .then(res => setAssignableUsers(res.data.data))
+        .catch(err => console.error("Error cargando usuarios asignables:", err));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const handleAssign = async (ticketId, userId) => {
+    try {
+      await assignTicketRequest(ticketId, userId);
+      await fetchTickets();
+    } catch (error) {
+      console.error("Error asignando ticket:", error);
+    }
+  };
 
   const advanceTicket = async (id, nextStatus) => {
     try {
@@ -114,15 +123,15 @@ export default function TicketTable({ statusFilter, compact = false }) {
                   <Select
                     size="small"
                     displayEmpty
-                    value={assignments[ticket.id] || ""}
-                    onChange={(e) => assignTicket(ticket.id, e.target.value)}
+                    value={ticket.assigned_to || ""}
+                    onChange={(e) => handleAssign(ticket.id, e.target.value)}
                     sx={{ minWidth: 160 }}
                   >
                     <MenuItem value="">
                       <em>Sin asignar</em>
                     </MenuItem>
-                    {ASSIGNEES.map((name) => (
-                      <MenuItem key={name} value={name}>{name}</MenuItem>
+                    {assignableUsers.map((assignee) => (
+                      <MenuItem key={assignee.id} value={assignee.id}>{assignee.name}</MenuItem>
                     ))}
                   </Select>
                 </TableCell>

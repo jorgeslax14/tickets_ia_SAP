@@ -161,3 +161,35 @@ def update_ticket_status(ticket_id: int, data: dict):
         return {"success": False, "message": str(e)}
     finally:
         conn.close()
+
+
+@router.put("/tickets/{ticket_id}/assign")
+def assign_ticket(ticket_id: int, data: dict):
+    assigned_to = data.get("assigned_to")
+    if assigned_to is None:
+        raise HTTPException(status_code=400, detail="El campo 'assigned_to' es requerido")
+
+    try:
+        conn = get_connection()
+        cursor = conn.cursor()
+
+        cursor.execute(
+            "UPDATE tickets SET assigned_to = %s WHERE id = %s",
+            (assigned_to, ticket_id),
+        )
+        conn.commit()
+
+        updated = cursor.rowcount > 0
+
+        cursor.close()
+        conn.close()
+
+        if not updated:
+            raise HTTPException(status_code=404, detail="Ticket no encontrado")
+
+        return {"success": True, "message": "Ticket asignado correctamente"}
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        return {"success": False, "message": str(e)}

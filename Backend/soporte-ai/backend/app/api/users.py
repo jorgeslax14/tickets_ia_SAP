@@ -5,6 +5,28 @@ from app.db.database import get_connection
 router = APIRouter()
 
 
+@router.get("/users")
+def get_users(role: str | None = None):
+    try:
+        conn = get_connection()
+        cursor = conn.cursor(dictionary=True)
+
+        if role:
+            cursor.execute("SELECT id, name, email, role FROM users WHERE role = %s", (role,))
+        else:
+            cursor.execute("SELECT id, name, email, role FROM users")
+
+        users = cursor.fetchall()
+
+        cursor.close()
+        conn.close()
+
+        return {"success": True, "data": users}
+
+    except Exception as e:
+        return {"success": False, "message": str(e)}
+
+
 @router.post("/login")
 def login(data: dict):
     username = (data.get("username") or "").strip()

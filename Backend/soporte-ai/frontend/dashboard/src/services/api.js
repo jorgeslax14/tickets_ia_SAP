@@ -16,4 +16,9 @@ export const getTicketHistory = () => API.get("/tickets/history");
 
 export const login = (username) => API.post("/login", { username });
 
+export const getUsersByRole = (role) => API.get("/users", { params: { role } });
+
+export const assignTicket = (ticketId, userId) =>
+  API.put(`/tickets/${ticketId}/assign`, { assigned_to: userId });
+
 export default API;
