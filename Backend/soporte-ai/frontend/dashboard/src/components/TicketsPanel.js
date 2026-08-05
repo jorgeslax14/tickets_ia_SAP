@@ -23,7 +23,9 @@ export default function TicketsPanel() {
         </Button>
       </ButtonGroup>
 
-      {view === "open" ? <TicketTable /> : <TicketHistoryTable />}
+      {view === "open"
+        ? <TicketTable statusFilter={["OPEN", "IN_PROGRESS"]} />
+        : <TicketHistoryTable />}
     </div>
   );
 }

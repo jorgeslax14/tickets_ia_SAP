@@ -69,8 +69,9 @@ export default function TicketTable({ statusFilter, compact = false }) {
 
   if (loading) return <CircularProgress />;
 
+  const allowedStatuses = Array.isArray(statusFilter) ? statusFilter : [statusFilter];
   const visibleTickets = statusFilter
-    ? tickets.filter(ticket => ticket.status === statusFilter)
+    ? tickets.filter(ticket => allowedStatuses.includes(ticket.status))
     : tickets;
 
   return (
