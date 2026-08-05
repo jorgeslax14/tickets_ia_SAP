@@ -16,7 +16,7 @@ function App() {
     return <Dashboard user={session.username} onLogout={handleLogout} />;
   }
 
-  return <UserTicketsPage user={session.username} onLogout={handleLogout} />;
+  return <UserTicketsPage user={session.username} userId={session.id} onLogout={handleLogout} />;
 }
 
 export default App;

@@ -11,7 +11,7 @@ const TABS = [
   { label: "Tickets finalizados", statusFilter: "DONE" },
 ];
 
-const UserTicketsPage = ({ user, onLogout }) => {
+const UserTicketsPage = ({ user, userId, onLogout }) => {
   const [tabIndex, setTabIndex] = useState(0);
   const currentTab = TABS[tabIndex];
 
@@ -34,9 +34,9 @@ const UserTicketsPage = ({ user, onLogout }) => {
       </Tabs>
 
       {currentTab.statusFilter === "DONE" ? (
-        <TicketHistoryTable compact />
+        <TicketHistoryTable compact assignedTo={userId} />
       ) : (
-        <TicketTable compact statusFilter={currentTab.statusFilter} />
+        <TicketTable compact statusFilter={currentTab.statusFilter} assignedTo={userId} />
       )}
     </div>
   );

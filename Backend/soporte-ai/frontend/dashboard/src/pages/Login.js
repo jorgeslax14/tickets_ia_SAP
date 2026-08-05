@@ -27,7 +27,7 @@ const Login = ({ onLogin }) => {
       // no valida credenciales reales, solo identifica al usuario.
       const res = await login(username);
       const user = res.data.data;
-      onLogin({ username: user.name, role: user.role });
+      onLogin({ id: user.id, username: user.name, role: user.role });
     } catch (err) {
       setError(err.response?.data?.detail || "No se pudo validar el usuario");
     } finally {

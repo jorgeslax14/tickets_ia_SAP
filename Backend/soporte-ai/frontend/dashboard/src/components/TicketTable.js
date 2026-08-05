@@ -31,7 +31,7 @@ const NEXT_STEP = {
   IN_PROGRESS: { status: "DONE", label: "Finalizar" },
 };
 
-export default function TicketTable({ statusFilter, compact = false }) {
+export default function TicketTable({ statusFilter, compact = false, assignedTo }) {
   const [tickets, setTickets] = useState([]);
   const [assignableUsers, setAssignableUsers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -79,9 +79,9 @@ export default function TicketTable({ statusFilter, compact = false }) {
   if (loading) return <CircularProgress />;
 
   const allowedStatuses = Array.isArray(statusFilter) ? statusFilter : [statusFilter];
-  const visibleTickets = statusFilter
-    ? tickets.filter(ticket => allowedStatuses.includes(ticket.status))
-    : tickets;
+  const visibleTickets = tickets
+    .filter(ticket => !statusFilter || allowedStatuses.includes(ticket.status))
+    .filter(ticket => assignedTo == null || ticket.assigned_to === assignedTo);
 
   return (
     <TableContainer component={Paper} sx={{ mt: 4 }}>

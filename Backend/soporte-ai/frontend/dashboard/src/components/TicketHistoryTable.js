@@ -5,7 +5,7 @@ import {
 } from "@mui/material";
 import { getTicketHistory } from "../services/api";
 
-export default function TicketHistoryTable({ compact = false }) {
+export default function TicketHistoryTable({ compact = false, assignedTo }) {
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -17,6 +17,10 @@ export default function TicketHistoryTable({ compact = false }) {
   }, []);
 
   if (loading) return <CircularProgress />;
+
+  const visibleHistory = history.filter(
+    item => assignedTo == null || item.ticket?.assigned_to === assignedTo
+  );
 
   return (
     <TableContainer component={Paper} sx={{ mt: 4 }}>
@@ -43,7 +47,7 @@ export default function TicketHistoryTable({ compact = false }) {
         </TableHead>
 
         <TableBody>
-          {history.map(item => (
+          {visibleHistory.map(item => (
             <TableRow key={item.id}>
               <TableCell>{item.ticket_id}</TableCell>
               <TableCell>{item.ticket?.title}</TableCell>
