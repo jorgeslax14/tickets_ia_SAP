@@ -35,6 +35,7 @@ export default function TicketTable({ statusFilter, compact = false, assignedTo 
   const [tickets, setTickets] = useState([]);
   const [assignableUsers, setAssignableUsers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [pendingAssignments, setPendingAssignments] = useState({});
 
   const fetchTickets = async () => {
     try {
@@ -58,9 +59,21 @@ export default function TicketTable({ statusFilter, compact = false, assignedTo 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const handleAssign = async (ticketId, userId) => {
+  const selectPendingAssignee = (ticketId, userId) => {
+    setPendingAssignments(prev => ({ ...prev, [ticketId]: userId }));
+  };
+
+  const confirmAssign = async (ticketId) => {
+    const userId = pendingAssignments[ticketId];
+    if (!userId) return;
+
     try {
       await assignTicketRequest(ticketId, userId);
+      setPendingAssignments(prev => {
+        const next = { ...prev };
+        delete next[ticketId];
+        return next;
+      });
       await fetchTickets();
     } catch (error) {
       console.error("Error asignando ticket:", error);
@@ -123,8 +136,9 @@ export default function TicketTable({ statusFilter, compact = false, assignedTo 
                   <Select
                     size="small"
                     displayEmpty
-                    value={ticket.assigned_to || ""}
-                    onChange={(e) => handleAssign(ticket.id, e.target.value)}
+                    disabled={!!ticket.assigned_to}
+                    value={ticket.assigned_to || pendingAssignments[ticket.id] || ""}
+                    onChange={(e) => selectPendingAssignee(ticket.id, e.target.value)}
                     sx={{ minWidth: 160 }}
                   >
                     <MenuItem value="">
@@ -138,15 +152,31 @@ export default function TicketTable({ statusFilter, compact = false, assignedTo 
               )}
 
               <TableCell>
-                {NEXT_STEP[ticket.status] && (
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    size="small"
-                    onClick={() => advanceTicket(ticket.id, NEXT_STEP[ticket.status].status)}
-                  >
-                    {NEXT_STEP[ticket.status].label}
-                  </Button>
+                {compact ? (
+                  NEXT_STEP[ticket.status] && (
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      size="small"
+                      onClick={() => advanceTicket(ticket.id, NEXT_STEP[ticket.status].status)}
+                    >
+                      {NEXT_STEP[ticket.status].label}
+                    </Button>
+                  )
+                ) : (
+                  // Una vez asignado, el estado lo maneja el usuario asignado
+                  // desde su propia pestaña "Mis Tickets", no desde aquí.
+                  !ticket.assigned_to && (
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      size="small"
+                      disabled={!pendingAssignments[ticket.id]}
+                      onClick={() => confirmAssign(ticket.id)}
+                    >
+                      Asignar
+                    </Button>
+                  )
                 )}
               </TableCell>
             </TableRow>
