@@ -21,9 +21,9 @@ ALLOWED_STATUSES = {"OPEN", "IN_PROGRESS", "DONE"}
 
 @router.post("/tickets")
 def create_ticket(data: dict):
-    message = data.get("message")
+    message = data.get("data")
     if not message:
-        raise HTTPException(status_code=400, detail="El campo 'message' es requerido")
+        raise HTTPException(status_code=400, detail="El campo 'data' es requerido")
 
     created_by = data.get("created_by", "desconocido")
 

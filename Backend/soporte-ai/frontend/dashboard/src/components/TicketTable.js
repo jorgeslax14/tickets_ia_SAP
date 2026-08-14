@@ -102,6 +102,7 @@ export default function TicketTable({ statusFilter, compact = false, assignedTo 
         <TableHead>
           <TableRow>
             <TableCell><b>ID</b></TableCell>
+            <TableCell><b>ID Azure</b></TableCell>
             <TableCell><b>Título</b></TableCell>
             <TableCell><b>Módulo SAP</b></TableCell>
             <TableCell><b>Transacción</b></TableCell>
@@ -117,6 +118,7 @@ export default function TicketTable({ statusFilter, compact = false, assignedTo 
           {visibleTickets.map(ticket => (
             <TableRow key={ticket.id}>
               <TableCell>{ticket.id}</TableCell>
+              <TableCell>{ticket.id_azure}</TableCell> 
               <TableCell>{ticket.title}</TableCell>
               <TableCell>{ticket.module}</TableCell>
               <TableCell>{ticket.transaction_code}</TableCell>
