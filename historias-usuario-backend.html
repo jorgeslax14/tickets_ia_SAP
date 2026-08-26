@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Historias de Usuario Backend</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  :root {
+    --bg: #F1F3F4;
+    --surface: #FFFFFF;
+    --surface-2: #E7EAEC;
+    --ink: #1B2430;
+    --ink-soft: #56636E;
+    --border: #CBD2D6;
+    --accent: #0E7C86;
+    --accent-soft: #DCEEF0;
+    --amber: #B45F14;
+    --amber-soft: #F4E3CC;
+    --success: #2E7D4F;
+    --success-soft: #DCEEE0;
+    --font-display: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+    --font-body: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+    --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #10151A;
+      --surface: #1A222A;
+      --surface-2: #212B34;
+      --ink: #E7ECEE;
+      --ink-soft: #96A4AE;
+      --border: #303C46;
+      --accent: #55D6DE;
+      --accent-soft: #163338;
+      --amber: #E3963F;
+      --amber-soft: #3A2C1C;
+      --success: #5FCE8B;
+      --success-soft: #16321F;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --bg: #10151A;
+    --surface: #1A222A;
+    --surface-2: #212B34;
+    --ink: #E7ECEE;
+    --ink-soft: #96A4AE;
+    --border: #303C46;
+    --accent: #55D6DE;
+    --accent-soft: #163338;
+    --amber: #E3963F;
+    --amber-soft: #3A2C1C;
+    --success: #5FCE8B;
+    --success-soft: #16321F;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body { margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-body);
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .page {
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 56px 24px 80px;
+  }
+
+  .prose { max-width: 700px; }
+
+  header.prose { margin-bottom: 32px; }
+
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0 0 10px;
+  }
+
+  h1 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: clamp(28px, 4vw, 36px);
+    letter-spacing: -0.01em;
+    margin: 0 0 12px;
+    text-wrap: balance;
+  }
+
+  .dek {
+    font-size: 16px;
+    color: var(--ink-soft);
+    margin: 0;
+    max-width: 62ch;
+  }
+
+  .stats {
+    display: flex;
+    gap: 12px;
+    margin: 32px 0 0;
+    flex-wrap: wrap;
+  }
+
+  .stat {
+    flex: 1 1 140px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+  }
+
+  .stat .n {
+    font-family: var(--font-mono);
+    font-size: 26px;
+    font-weight: 500;
+    line-height: 1;
+  }
+
+  .stat.built .n { color: var(--success); }
+  .stat.pending .n { color: var(--amber); }
+
+  .stat .l {
+    font-size: 12.5px;
+    color: var(--ink-soft);
+    margin-top: 6px;
+  }
+
+  section.epic { margin-top: 52px; }
+
+  .epic-head {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    margin-bottom: 6px;
+  }
+
+  .epic-letter {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--accent);
+    background: var(--accent-soft);
+    border-radius: 6px;
+    padding: 2px 8px;
+  }
+
+  h2 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 20px;
+    margin: 0;
+    letter-spacing: -0.005em;
+  }
+
+  .epic-hint {
+    color: var(--ink-soft);
+    font-size: 14px;
+    margin: 0 0 20px;
+    max-width: 62ch;
+  }
+
+  .cards {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px 20px;
+  }
+
+  .card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 8px;
+  }
+
+  .card-id {
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    color: var(--ink-soft);
+  }
+
+  .pill {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: .03em;
+    padding: 3px 9px;
+    border-radius: 999px;
+    white-space: nowrap;
+  }
+
+  .pill.built { background: var(--success-soft); color: var(--success); }
+  .pill.pending { background: var(--amber-soft); color: var(--amber); }
+
+  .card h3 {
+    font-family: var(--font-display);
+    font-size: 16.5px;
+    font-weight: 600;
+    margin: 0 0 8px;
+  }
+
+  .card .narrative {
+    font-size: 14.5px;
+    margin: 0 0 8px;
+  }
+
+  .card .narrative .role { color: var(--accent); font-weight: 600; }
+
+  .card .note {
+    font-size: 13px;
+    color: var(--ink-soft);
+    font-style: italic;
+    margin: 0 0 10px;
+  }
+
+  .touches {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+  }
+
+  .touches .label {
+    font-size: 11px;
+    color: var(--ink-soft);
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    margin-right: 2px;
+  }
+
+  .touches code {
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    background: var(--surface-2);
+    padding: 2px 7px;
+    border-radius: 5px;
+  }
+
+  footer {
+    margin-top: 60px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+    font-size: 12.5px;
+    color: var(--ink-soft);
+  }
+
+  footer a { color: var(--accent); }
+  footer .doc-links { display: flex; gap: 16px; margin-top: 6px; flex-wrap: wrap; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header class="prose">
+    <p class="eyebrow">Backlog · capa API</p>
+    <h1>Historias de Usuario — Backend</h1>
+    <p class="dek">Lo que FastAPI ya resuelve, y lo que quedó como hueco identificado en el camino, agrupado en las mismas capas del <a href="arquitectura.html" style="color:var(--accent)">mapa de arquitectura</a>.</p>
+  </header>
+
+  <div class="stats">
+    <div class="stat">
+      <div class="n">22</div>
+      <div class="l">historias totales</div>
+    </div>
+    <div class="stat built">
+      <div class="n">13</div>
+      <div class="l">construidas</div>
+    </div>
+    <div class="stat pending">
+      <div class="n">9</div>
+      <div class="l">candidatas / pendientes</div>
+    </div>
+  </div>
+
+  <section class="epic">
+    <div class="epic-head">
+      <span class="epic-letter">A</span>
+      <h2>Arranque y configuración del servicio</h2>
+    </div>
+    <p class="epic-hint">Lo que hace que la API exista, arranque y se pueda operar — no es negocio, pero sin esto nada más funciona.</p>
+    <div class="cards">
+
+      <div class="card">
+        <div class="card-top"><span class="card-id">US-BE-001</span><span class="pill built">construida</span></div>
+        <h3>Aceptar peticiones del frontend sin bloqueos de CORS</h3>
+        <p class="narrative">Como <span class="role">aplicación cliente (React)</span>, quiero que el servidor acepte peticiones desde su origen configurado, para poder consumirlo sin errores de CORS.</p>
+        <p class="note">Origen configurable vía <code>CORS_ORIGINS</code> en <code>.env</code>, por defecto <code>http://localhost:3000</code>.</p>
+        <div class="touches"><span class="label">Toca</span><code>main.py</code></div>
+      </div>
+
+      <div class="card">
+        <div class="card-top"><span class="card-id">US-BE-002</span><span class="pill built">construida</span></div>
+        <h3>Mantener las credenciales fuera del código fuente</h3>
+        <p class="narrative">Como <span class="role">responsable de seguridad</span>, quiero que la clave de OpenAI y las credenciales de MySQL vivan en variables de entorno, para no exponer secretos si el repositorio se comparte.</p>
+        <div class="touches"><span class="label">Toca</span><code>main.py</code><code>database.py</code><code>ai_service.py</code><code>.env.example</code></div>
+      </div>
+
+      <div class="card">
+        <div class="card-top"><span class="card-id">US-BE-003</span><span class="pill built">construida</span></div>
+        <h3>Verificar que el servicio está en línea</h3>
+        <p class="narrative">Como <span class="role">equipo de operaciones</span>, quiero un endpoint simple que confirme que la API está corriendo, para monitorear disponibilidad sin depender de un endpoint de negocio.</p>
+        <div class="touches"><span class="label">Toca</span><code>main.py — GET /</code></div>
+      </div>
+
+      <div class="card">
+        <div class="card-top"><span class="card-id">US-BE-004</span><span class="pill pending">candidata</span></div>
+        <h3>Probar la API de forma automatizada</h3>
+        <p class="narrative">Como <span class="role">equipo de desarrollo</span>, quiero una suite de pruebas automatizadas para los endpoints, para detectar regresiones antes de que lleguen a producción.</p>
+        <p class="note">Hoy cada cambio se verificó manualmente con curl contra una instancia local — no hay pytest ni CI corriendo la API.</p>
+        <div class="touches"><span class="label">Toca</span><code>backend/ (sin carpeta de tests aún)</code></div>
+      </div>
+
+    </div>
+  </section>
+
+  <section class="epic">
+    <div class="epic-head">
+      <span class="epic-letter">B</span>
+      <h2>Identificación de usuarios</h2>
+    </div>
+    <p class="epic-hint">El router <code>users</code>: quién es alguien y qué puede ver de él el frontend.</p>
+    <div class="cards">
+
+      <div class="card">
+        <div class="card-top"><span class="card-id">US-BE-005</span><span class="pill built">construida</span></div>
+        <h3>Identificar un usuario por nombre o correo</h3>
+        <p class="narrative">Como <span class="role">aplicación cliente</span>, quiero enviar un nombre de usuario y recibir su id, nombre y rol, para decidir a qué pantalla enrutarlo.</p>
+        <div class="touches"><span class="label">Toca</span><code>users.py — POST /login</code></div>
+      </div>
+
+      <div class="card">
+        <div class="card-top"><span class="card-id">US-BE-006</span><span class="pill built">construida</span></div>
+        <h3>Listar usuarios filtrando por rol</h3>
+        <p class="narrative">Como <span class="role">aplicación cliente</span>, quiero pedir solo los usuarios con un rol específico, para construir el desplegable de asignación sin traer administradores.</p>
+        <div class="touches"><span class="label">Toca</span><code>users.py — GET /users?role=</code></div>
+      </div>
+
+      <div class="card">
+        <div class="card-top"><span class="card-id">US-BE-007</span><span class="pill pending">candidata</span></div>
+        <h3>Validar la contraseña real de un usuario</h3>
+        <p class="narrative">Como <span class="role">responsable de seguridad</span>, quiero que <code>POST /login</code> compare una contraseña contra un hash almacenado, para que identificarse no sea solo escribir un nombre que exista.</p>
+        <p class="note"><code>users</code> no tiene columna de contraseña todavía.</p>
+        <div class="touches"><span class="label">Toca</span><code>users.py</code><code>database/schema.sql</code></div>
+      </div>
+
+      <div class="card">
+        <div class="card-top"><span class="card-id">US-BE-008</span><span class="pill pending">candidata</span></div>
+        <h3>Proteger los endpoints según el rol del solicitante</h3>
+        <p class="narrative">Como <span class="role">responsable de seguridad</span>, quiero que acciones como asignar un ticket verifiquen el rol de quien llama (vía token), para que la separación admin/usuario no dependa solo de que el frontend oculte botones.</p>
+        <p class="note">Hoy cualquier cliente que conozca la URL puede llamar <code>PUT /tickets/{id}/assign</code> sin importar su rol.</p>
+        <div class="touches"><span class="label">Toca</span><code>main.py</code><code>tickets.py</code><code>users.py</code></div>
+      </div>
+
+    </div>
+  </section>
+
+  <section class="epic">
+    <div class="epic-head">
+      <span class="epic-letter">C</span>
+      <h2>Ciclo de vida de un ticket</h2>
+    </div>
+    <p class="epic-hint">El router <code>tickets</code>: crear, listar, mover de estado y asignar.</p>
+    <div class="cards">
+
+      <div class="card">
+        <div class="card-top"><span class="card-id">US-BE-009</span><span class="pill built">construida</span></div>
+        <h3>Registrar un ticket nuevo a partir de un mensaje libre</h3>
+        <p class="narrative">Como <span class="role">aplicación cliente</span>, quiero enviar un mensaje de texto y que la API cree el ticket ya clasificado y priorizado, para no calcular módulo ni prioridad en el frontend.</p>
+        <div class="touches"><span class="label">Toca</span><code>tickets.py — POST /tickets</code></div>
+      </div>
+
+      <div class="card">
+        <div class="card-top"><span class="card-id">US-BE-010</span><span class="pill built">construida</span></div>
+        <h3>Listar los tickets activos ordenados por prioridad</h3>
+        <p class="narrative">Como <span class="role">aplicación cliente</span>, quiero recibir los tickets activos ya ordenados por prioridad descendente, para pintar la tabla sin ordenar en el cliente.</p>
+        <div class="touches"><span class="label">Toca</span><code>tickets.py — GET /tickets</code></div>
+      </div>
+
+      <div class="card">
+        <div class="card-top"><span class="card-id">US-BE-011</span><span class="pill built">construida</span></div>
+        <h3>Cambiar el estado de un ticket validando que sea uno permitido</h3>
+        <p class="narrative">Como <span class="role">aplicación cliente</span>, quiero enviar un nuevo estado y que la API lo rechace si no es OPEN/IN_PROGRESS/DONE, para no meter datos inconsistentes en la base.</p>
+        <div class="touches"><span class="label">Toca</span><code>tickets.py — PUT /tickets/{id}</code></div>
+      </div>
+
+      <div class="card">
+        <div class="card-top"><span class="card-id">US-BE-012</span><span class="pill built">construida</span></div>
+        <h3>Asignar un ticket a un usuario</h3>
+        <p class="narrative">Como <span class="role">aplicación cliente</span>, quiero enviar el id de un usuario y que quede guardado como responsable del ticket, para que aparezca en su bandeja personal.</p>
+        <div class="touches"><span class="label">Toca</span><code>tickets.py — PUT /tickets/{id}/assign</code></div>
+      </div>
+
+      <div class="card">
+        <div class="card-top"><span class="card-id">US-BE-013</span><span class="pill pending">candidata</span></div>
+        <h3>Verificar que el usuario asignado exista y tenga rol "user"</h3>
+        <p class="narrative">Como <span class="role">responsable de datos</span>, quiero que la API valide el <code>assigned_to</code> contra la tabla <code>users</code> antes de guardarlo, para no dejar tickets apuntando a un id inexistente o a un administrador.</p>
+        <p class="note">No hay llave foránea entre <code>tickets.assigned_to</code> y <code>users.id</code>, y el endpoint no valida el id recibido.</p>
+        <div class="touches"><span class="label">Toca</span><code>tickets.py</code></div>
+      </div>
+
+      <div class="card">
+        <div class="card-top"><span class="card-id">US-BE-014</span><span class="pill pending">candidata</span></div>
+        <h3>Filtrar y paginar tickets desde el servidor</h3>
+        <p class="narrative">Como <span class="role">aplicación cliente</span>, quiero pedir tickets por estado o por usuario asignado directamente al servidor, para no traer la tabla completa cada vez que alguien abre una pestaña.</p>
+        <p class="note">Hoy <code>GET /tickets</code> siempre trae todo; el filtrado por estado y por <code>assigned_to</code> ocurre en el navegador.</p>
+        <div class="touches"><span class="label">Toca</span><code>tickets.py</code></div>
+      </div>
+
+    </div>
+  </section>
+
+  <section class="epic">
+    <div class="epic-head">
+      <span class="epic-letter">D</span>
+      <h2>Clasificación y priorización automática</h2>
+    </div>
+    <p class="epic-hint">Lo que decide de qué se trata un ticket y qué tan urgente es, sin intervención humana.</p>
+    <div class="cards">
+
+      <div class="card">
+        <div class="card-top"><span class="card-id">US-BE-015</span><span class="pill built">construida</span></div>
+        <h3>Clasificar automáticamente un ticket con IA</h3>
+        <p class="narrative">Como <span class="role">aplicación cliente</span>, quiero que la API use IA para extraer módulo SAP, transacción, urgencia e impacto del mensaje, para no pedirle esos campos a quien crea el ticket.</p>
+        <div class="touches"><span class="label">Toca</span><code>ai_service.py</code></div>
+      </div>
+
+      <div class="card">
+        <div class="card-top"><span class="card-id">US-BE-016</span><span class="pill built">construida</span></div>
+        <h3>Calcular la prioridad de forma consistente</h3>
+        <p class="narrative">Como <span class="role">aplicación cliente</span>, quiero que la prioridad se calcule siempre con la misma fórmula, para que el orden de la tabla sea predecible.</p>
+        <div class="touches"><span class="label">Toca</span><code>prioritization.py</code></div>
+      </div>
+
+      <div class="card">
+        <div class="card-top"><span class="card-id">US-BE-017</span><span class="pill pending">candidata</span></div>
+        <h3>No bloquear la creación si OpenAI tarda o no responde</h3>
+        <p class="narrative">Como <span class="role">usuario que crea un ticket</span>, quiero que la API no se cuelgue esperando a OpenAI, para que crear un ticket no dependa de la latencia de un servicio externo.</p>
+        <p class="note"><code>analyze_ticket()</code> no tiene timeout explícito; el <code>except Exception</code> cubre el fallo, pero una llamada lenta igual demora toda la respuesta.</p>
+        <div class="touches"><span class="label">Toca</span><code>ai_service.py</code></div>
+      </div>
+
+      <div class="card">
+        <div class="card-top"><span class="card-id">US-BE-018</span><span class="pill pending">candidata</span></div>
+        <h3>Ajustar los pesos de prioridad sin tocar código</h3>
+        <p class="narrative">Como <span class="role">responsable de soporte</span>, quiero poder cambiar los pesos de urgencia/impacto sin un deploy, para adaptar el criterio de priorización sin depender de desarrollo.</p>
+        <p class="note">Hoy <code>urgencia×2 + impacto</code> está fijo en el código.</p>
+        <div class="touches"><span class="label">Toca</span><code>prioritization.py</code></div>
+      </div>
+
+    </div>
+  </section>
+
+  <section class="epic">
+    <div class="epic-head">
+      <span class="epic-letter">E</span>
+      <h2>Persistencia, archivado y auditoría</h2>
+    </div>
+    <p class="epic-hint">Cómo llegan los datos a MySQL, y qué queda como rastro cuando un ticket se cierra.</p>
+    <div class="cards">
+
+      <div class="card">
+        <div class="card-top"><span class="card-id">US-BE-019</span><span class="pill built">construida</span></div>
+        <h3>Archivar el ticket finalizado en vez de dejarlo activo</h3>
+        <p class="narrative">Como <span class="role">aplicación cliente</span>, quiero que al marcar un ticket como DONE la API lo mueva a <code>ticket_history</code> y lo borre de <code>tickets</code>, para que el dashboard nunca acumule tickets cerrados.</p>
+        <div class="touches"><span class="label">Toca</span><code>tickets.py — _archive_and_delete_ticket</code></div>
+      </div>
+
+      <div class="card">
+        <div class="card-top"><span class="card-id">US-BE-020</span><span class="pill built">construida</span></div>
+        <h3>Consultar el historial de tickets archivados</h3>
+        <p class="narrative">Como <span class="role">aplicación cliente</span>, quiero pedir el historial ya desempaquetado en campos planos, para no parsear el JSON crudo de <code>ticket_history</code> en el navegador.</p>
+        <div class="touches"><span class="label">Toca</span><code>tickets.py — GET /tickets/history</code></div>
+      </div>
+
+      <div class="card">
+        <div class="card-top"><span class="card-id">US-BE-021</span><span class="pill pending">candidata</span></div>
+        <h3>Unificar el acceso a la base de datos</h3>
+        <p class="narrative">Como <span class="role">equipo de desarrollo</span>, quiero que todos los endpoints usen una sola forma de hablar con MySQL, para no mantener dos rutas de conexión con comportamientos distintos.</p>
+        <p class="note"><code>ticket_service.py</code> inserta vía SQLAlchemy; el resto de <code>tickets.py</code>/<code>users.py</code> usa <code>mysql-connector</code> directo.</p>
+        <div class="touches"><span class="label">Toca</span><code>database.py</code><code>ticket_service.py</code><code>tickets.py</code><code>users.py</code></div>
+      </div>
+
+      <div class="card">
+        <div class="card-top"><span class="card-id">US-BE-022</span><span class="pill pending">candidata</span></div>
+        <h3>Registrar auditoría de cada cambio de estado y asignación</h3>
+        <p class="narrative">Como <span class="role">responsable de soporte</span>, quiero que quede un registro también de los cambios a IN_PROGRESS y de las asignaciones, no solo del archivado final, para reconstruir la línea de tiempo completa de un ticket.</p>
+        <p class="note">Hoy <code>ticket_history</code> solo recibe una entrada, en el momento en que el ticket pasa a DONE.</p>
+        <div class="touches"><span class="label">Toca</span><code>tickets.py</code><code>database/schema.sql</code></div>
+      </div>
+
+    </div>
+  </section>
+
+  <footer>
+    Backlog derivado del desarrollo real de <code>Backend/soporte-ai/backend</code>.
+    <div class="doc-links">
+      <a href="arquitectura.html">Arquitectura</a>
+      <a href="historias-usuario-frontend.html">HU Frontend</a>
+      <a href="historias-usuario-basedatos.html">HU Base de Datos</a>
+    </div>
+  </footer>
+
+</div>
+</body>
+</html>

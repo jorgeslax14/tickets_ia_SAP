@@ -36,7 +36,7 @@ Plantilla reutilizable para documentar historias de usuario en proyectos de impl
 - Cuando *[acción del usuario/transacción]*
 - Entonces *[resultado esperado, incluyendo mensajes de error/validación]*
 
-*(Repetir el bloque Given/When/Then por cada escenario)*
+*(Repetir el bloque Dado que/Cuando/Entonces por cada escenario)*
 
 ## 5. Reglas de negocio
 
@@ -44,8 +44,8 @@ Plantilla reutilizable para documentar historias de usuario en proyectos de impl
 
 ## 6. Impacto técnico
 
-- **Objetos SAP afectados**: tablas, estructuras, BAdIs, exits, enhancement points
-- **Interfaces**: IDocs, RFCs, BAPIs, API/OData (si aplica integración)
+- **Objetos SAP afectados**: tablas, estructuras, BAdIs, exits, enhancement points - Opcional
+- **Interfaces**: IDocs, RFCs, BAPIs, API/OData (si aplica integración) - Opcional
 - **Impacto en otros módulos**: *(ej. un cambio en MM que afecta FI)*
 
 ## 7. No funcionales / restricciones
@@ -60,7 +60,7 @@ Plantilla reutilizable para documentar historias de usuario en proyectos de impl
 
 ## 9. Definition of Done
 
-- [ ] Desarrollado y unit-testeado
+- [ ] Desarrollado con practicas establecidas por CHAPTER ABAP
 - [ ] Transportado a QA
 - [ ] Caso de prueba ejecutado y validado por el usuario clave (key user)
 - [ ] Documentación funcional/técnica actualizada

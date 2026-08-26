@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Historias de Usuario Frontend</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  :root {
+    --bg: #F1F3F4;
+    --surface: #FFFFFF;
+    --surface-2: #E7EAEC;
+    --ink: #1B2430;
+    --ink-soft: #56636E;
+    --border: #CBD2D6;
+    --accent: #0E7C86;
+    --accent-soft: #DCEEF0;
+    --amber: #B45F14;
+    --amber-soft: #F4E3CC;
+    --success: #2E7D4F;
+    --success-soft: #DCEEE0;
+    --font-display: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+    --font-body: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+    --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #10151A;
+      --surface: #1A222A;
+      --surface-2: #212B34;
+      --ink: #E7ECEE;
+      --ink-soft: #96A4AE;
+      --border: #303C46;
+      --accent: #55D6DE;
+      --accent-soft: #163338;
+      --amber: #E3963F;
+      --amber-soft: #3A2C1C;
+      --success: #5FCE8B;
+      --success-soft: #16321F;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --bg: #10151A;
+    --surface: #1A222A;
+    --surface-2: #212B34;
+    --ink: #E7ECEE;
+    --ink-soft: #96A4AE;
+    --border: #303C46;
+    --accent: #55D6DE;
+    --accent-soft: #163338;
+    --amber: #E3963F;
+    --amber-soft: #3A2C1C;
+    --success: #5FCE8B;
+    --success-soft: #16321F;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body { margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-body);
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .page {
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 56px 24px 80px;
+  }
+
+  .prose { max-width: 700px; }
+
+  header.prose { margin-bottom: 32px; }
+
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0 0 10px;
+  }
+
+  h1 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: clamp(28px, 4vw, 36px);
+    letter-spacing: -0.01em;
+    margin: 0 0 12px;
+    text-wrap: balance;
+  }
+
+  .dek {
+    font-size: 16px;
+    color: var(--ink-soft);
+    margin: 0;
+    max-width: 62ch;
+  }
+
+  .stats {
+    display: flex;
+    gap: 12px;
+    margin: 32px 0 0;
+    flex-wrap: wrap;
+  }
+
+  .stat {
+    flex: 1 1 140px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+  }
+
+  .stat .n {
+    font-family: var(--font-mono);
+    font-size: 26px;
+    font-weight: 500;
+    line-height: 1;
+  }
+
+  .stat.built .n { color: var(--success); }
+  .stat.pending .n { color: var(--amber); }
+
+  .stat .l {
+    font-size: 12.5px;
+    color: var(--ink-soft);
+    margin-top: 6px;
+  }
+
+  section.epic { margin-top: 52px; }
+
+  .epic-head {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    margin-bottom: 6px;
+  }
+
+  .epic-letter {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--accent);
+    background: var(--accent-soft);
+    border-radius: 6px;
+    padding: 2px 8px;
+  }
+
+  h2 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 20px;
+    margin: 0;
+    letter-spacing: -0.005em;
+  }
+
+  .epic-hint {
+    color: var(--ink-soft);
+    font-size: 14px;
+    margin: 0 0 20px;
+    max-width: 62ch;
+  }
+
+  .cards {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px 20px;
+  }
+
+  .card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 8px;
+  }
+
+  .card-id {
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    color: var(--ink-soft);
+  }
+
+  .pill {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: .03em;
+    padding: 3px 9px;
+    border-radius: 999px;
+    white-space: nowrap;
+  }
+
+  .pill.built { background: var(--success-soft); color: var(--success); }
+  .pill.pending { background: var(--amber-soft); color: var(--amber); }
+
+  .card h3 {
+    font-family: var(--font-display);
+    font-size: 16.5px;
+    font-weight: 600;
+    margin: 0 0 8px;
+  }
+
+  .card .narrative {
+    font-size: 14.5px;
+    margin: 0 0 8px;
+  }
+
+  .card .narrative .role { color: var(--accent); font-weight: 600; }
+
+  .card .note {
+    font-size: 13px;
+    color: var(--ink-soft);
+    font-style: italic;
+    margin: 0 0 10px;
+  }
+
+  .touches {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+  }
+
+  .touches .label {
+    font-size: 11px;
+    color: var(--ink-soft);
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    margin-right: 2px;
+  }
+
+  .touches code {
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    background: var(--surface-2);
+    padding: 2px 7px;
+    border-radius: 5px;
+  }
+
+  footer {
+    margin-top: 60px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+    font-size: 12.5px;
+    color: var(--ink-soft);
+  }
+
+  footer a { color: var(--accent); }
+  footer .doc-links { display: flex; gap: 16px; margin-top: 6px; flex-wrap: wrap; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header class="prose">
+    <p class="eyebrow">Backlog · capa frontend</p>
+    <h1>Historias de Usuario — Frontend</h1>
+    <p class="dek">Lo que el cliente React ya resuelve, y lo que quedó como hueco identificado en el camino, agrupado en las mismas capas del <a href="arquitectura.html" style="color:var(--accent)">mapa de arquitectura</a>.</p>
+  </header>
+
+  <div class="stats">
+    <div class="stat">
+      <div class="n">19</div>
+      <div class="l">historias totales</div>
+    </div>
+    <div class="stat built">
+      <div class="n">12</div>
+      <div class="l">construidas</div>
+    </div>
+    <div class="stat pending">
+      <div class="n">7</div>
+      <div class="l">candidatas / pendientes</div>
+    </div>
+  </div>
+
+  <section class="epic">
+    <div class="epic-head">
+      <span class="epic-letter">A</span>
+      <h2>Acceso y sesión</h2>
+    </div>
+    <p class="epic-hint">Cómo se identifica un usuario y cómo el sistema decide qué mostrarle.</p>
+    <div class="cards">
+
+      <div class="card">
+        <div class="card-top"><span class="card-id">US-FE-001</span><span class="pill built">construida</span></div>
+        <h3>Identificarme para entrar al sistema</h3>
+        <p class="narrative">Como <span class="role">agente o administrador de soporte</span>, quiero ingresar mi usuario y contraseña, para acceder a mi espacio de trabajo correspondiente.</p>
+        <div class="touches"><span class="label">Toca</span><code>Login.js</code></div>
+      </div>
+
+      <div class="card">
+        <div class="card-top"><span class="card-id">US-FE-002</span><span class="pill built">construida</span></div>
+        <h3>Ir directo a mi espacio según mi rol</h3>
+        <p class="narrative">Como <span class="role">usuario autenticado</span>, quiero que el sistema me lleve automáticamente al Dashboard o a Mis Tickets según mi rol, para no tener que elegir manualmente dónde trabajar.</p>
+        <div class="touches"><span class="label">Toca</span><code>App.js</code></div>
+      </div>
+
+      <div class="card">
+        <div class="card-top"><span class="card-id">US-FE-003</span><span class="pill built">construida</span></div>
+        <h3>Cerrar sesión</h3>
+        <p class="narrative">Como <span class="role">usuario autenticado</span>, quiero cerrar sesión con un botón visible, para dejar el equipo listo para otro usuario.</p>
+        <div class="touches"><span class="label">Toca</span><code>Dashboard.js</code><code>UserTicketsPage.js</code></div>
+      </div>
+
+      <div class="card">
+        <div class="card-top"><span class="card-id">US-FE-004</span><span class="pill pending">candidata</span></div>
+        <h3>Autenticarme con contraseña real</h3>
+        <p class="narrative">Como <span class="role">administrador de seguridad</span>, quiero que la contraseña se valide de verdad contra la base de datos, para que el login no sea solo una identificación por nombre.</p>
+        <p class="note">Hoy <code>POST /login</code> no compara contraseña — esa columna no existe todavía en <code>users</code>.</p>
+        <div class="touches"><span class="label">Toca</span><code>Login.js</code></div>
+      </div>
+
+      <div class="card">
+        <div class="card-top"><span class="card-id">US-FE-005</span><span class="pill pending">candidata</span></div>
+        <h3>Mantener la sesión al recargar</h3>
+        <p class="narrative">Como <span class="role">usuario</span>, quiero que mi sesión no se pierda si recargo la página, para no tener que loguearme de nuevo cada vez.</p>
+        <p class="note">Hoy el estado de sesión vive solo en memoria de React (<code>useState</code>), sin persistencia.</p>
+        <div class="touches"><span class="label">Toca</span><code>App.js</code></div>
+      </div>
+
+    </div>
+  </section>
+
+  <section class="epic">
+    <div class="epic-head">
+      <span class="epic-letter">B</span>
+      <h2>Dashboard del administrador</h2>
+    </div>
+    <p class="epic-hint">La vista de quien reparte el trabajo, no de quien lo ejecuta.</p>
+    <div class="cards">
+
+      <div class="card">
+        <div class="card-top"><span class="card-id">US-FE-006</span><span class="pill built">construida</span></div>
+        <h3>Ver los tickets activos</h3>
+        <p class="narrative">Como <span class="role">administrador</span>, quiero ver todos los tickets en estado OPEN o IN_PROGRESS ordenados por prioridad, para priorizar qué atender primero.</p>
+        <div class="touches"><span class="label">Toca</span><code>TicketTable.js</code><code>TicketsPanel.js</code></div>
+      </div>
+
+      <div class="card">
+        <div class="card-top"><span class="card-id">US-FE-007</span><span class="pill built">construida</span></div>
+        <h3>Asignar un ticket a un agente</h3>
+        <p class="narrative">Como <span class="role">administrador</span>, quiero elegir un usuario con rol "user" y confirmarlo con un botón "Asignar", para repartir la carga de trabajo del equipo.</p>
+        <div class="touches"><span class="label">Toca</span><code>TicketTable.js</code></div>
+      </div>
+
+      <div class="card">
+        <div class="card-top"><span class="card-id">US-FE-008</span><span class="pill built">construida</span></div>
+        <h3>Dejar de ver acciones sobre lo ya asignado</h3>
+        <p class="narrative">Como <span class="role">administrador</span>, quiero que el botón de asignar desaparezca una vez el ticket tiene dueño, para saber que ese ticket ya no depende de mí.</p>
+        <div class="touches"><span class="label">Toca</span><code>TicketTable.js</code></div>
+      </div>
+
+      <div class="card">
+        <div class="card-top"><span class="card-id">US-FE-009</span><span class="pill built">construida</span></div>
+        <h3>Consultar el historial de tickets cerrados</h3>
+        <p class="narrative">Como <span class="role">administrador</span>, quiero una pestaña de "Historial" con lo que ya se finalizó, para auditar el trabajo cerrado sin que estorbe en la vista activa.</p>
+        <div class="touches"><span class="label">Toca</span><code>TicketHistoryTable.js</code><code>TicketsPanel.js</code></div>
+      </div>
+
+      <div class="card">
+        <div class="card-top"><span class="card-id">US-FE-010</span><span class="pill pending">candidata</span></div>
+        <h3>Crear un ticket desde la interfaz</h3>
+        <p class="narrative">Como <span class="role">administrador o agente</span>, quiero un formulario en el Dashboard para crear un ticket nuevo, para no depender de Postman/curl para dar de alta un caso.</p>
+        <p class="note">El backend ya expone <code>POST /tickets</code>; el frontend nunca lo consume — no existe ese formulario hoy.</p>
+        <div class="touches"><span class="label">Toca</span><code>Dashboard.js</code></div>
+      </div>
+
+      <div class="card">
+        <div class="card-top"><span class="card-id">US-FE-011</span><span class="pill pending">candidata</span></div>
+        <h3>Reasignar un ticket ya asignado</h3>
+        <p class="narrative">Como <span class="role">administrador</span>, quiero poder cambiar el usuario asignado si me equivoqué o el agente no puede tomarlo, para corregir sin tener que borrar el ticket.</p>
+        <p class="note">Hoy el desplegable de asignación queda bloqueado en cuanto el ticket tiene dueño.</p>
+        <div class="touches"><span class="label">Toca</span><code>TicketTable.js</code></div>
+      </div>
+
+    </div>
+  </section>
+
+  <section class="epic">
+    <div class="epic-head">
+      <span class="epic-letter">C</span>
+      <h2>Espacio de trabajo del usuario asignado</h2>
+    </div>
+    <p class="epic-hint">"Mis Tickets" — lo que ve un agente una vez el administrador le repartió trabajo.</p>
+    <div class="cards">
+
+      <div class="card">
+        <div class="card-top"><span class="card-id">US-FE-012</span><span class="pill built">construida</span></div>
+        <h3>Ver solo lo que me asignaron</h3>
+        <p class="narrative">Como <span class="role">agente de soporte</span>, quiero ver únicamente los tickets con mi <code>assigned_to</code>, organizados en pestañas, para enfocarme en mi propia carga sin ruido de lo de otros.</p>
+        <div class="touches"><span class="label">Toca</span><code>UserTicketsPage.js</code><code>TicketTable.js</code><code>TicketHistoryTable.js</code></div>
+      </div>
+
+      <div class="card">
+        <div class="card-top"><span class="card-id">US-FE-013</span><span class="pill built">construida</span></div>
+        <h3>Tomar un ticket asignado</h3>
+        <p class="narrative">Como <span class="role">agente</span>, quiero pasar un ticket de "asignado" a "en proceso" con un botón, para indicar que ya empecé a trabajarlo.</p>
+        <div class="touches"><span class="label">Toca</span><code>TicketTable.js</code></div>
+      </div>
+
+      <div class="card">
+        <div class="card-top"><span class="card-id">US-FE-014</span><span class="pill built">construida</span></div>
+        <h3>Finalizar un ticket en proceso</h3>
+        <p class="narrative">Como <span class="role">agente</span>, quiero marcar un ticket como finalizado, para cerrarlo y que se archive automáticamente.</p>
+        <div class="touches"><span class="label">Toca</span><code>TicketTable.js</code></div>
+      </div>
+
+      <div class="card">
+        <div class="card-top"><span class="card-id">US-FE-015</span><span class="pill pending">candidata</span></div>
+        <h3>Ver por qué no tengo tickets</h3>
+        <p class="narrative">Como <span class="role">agente sin tickets asignados</span>, quiero un mensaje explícito en vez de una tabla vacía sin contexto, para entender que estoy al día y no que algo falló.</p>
+        <div class="touches"><span class="label">Toca</span><code>UserTicketsPage.js</code></div>
+      </div>
+
+    </div>
+  </section>
+
+  <section class="epic">
+    <div class="epic-head">
+      <span class="epic-letter">D</span>
+      <h2>Presentación transversal y manejo de errores</h2>
+    </div>
+    <p class="epic-hint">Lo que aplica a cualquier pantalla, no a una sola vista.</p>
+    <div class="cards">
+
+      <div class="card">
+        <div class="card-top"><span class="card-id">US-FE-016</span><span class="pill built">construida</span></div>
+        <h3>Distinguir prioridad y estado de un vistazo</h3>
+        <p class="narrative">Como <span class="role">cualquier usuario del sistema</span>, quiero ver la prioridad y el estado como chips de color, para identificar visualmente qué es urgente sin leer cada celda.</p>
+        <div class="touches"><span class="label">Toca</span><code>TicketTable.js</code><code>TicketHistoryTable.js</code></div>
+      </div>
+
+      <div class="card">
+        <div class="card-top"><span class="card-id">US-FE-017</span><span class="pill built">construida</span></div>
+        <h3>Ver el detalle SAP del ticket</h3>
+        <p class="narrative">Como <span class="role">agente</span>, quiero ver módulo SAP y transacción asociada en la misma tabla, para saber de qué se trata sin abrir el ticket.</p>
+        <div class="touches"><span class="label">Toca</span><code>TicketTable.js</code></div>
+      </div>
+
+      <div class="card">
+        <div class="card-top"><span class="card-id">US-FE-018</span><span class="pill pending">candidata</span></div>
+        <h3>Enterarme cuando una acción falla</h3>
+        <p class="narrative">Como <span class="role">usuario</span>, quiero un aviso visible cuando falla cargar, asignar o cambiar el estado de un ticket, para saber que debo reintentar en vez de pensar que ya quedó hecho.</p>
+        <p class="note">Hoy los errores de <code>TicketTable</code>/<code>TicketHistoryTable</code> solo van a <code>console.error</code>, nada llega a la pantalla.</p>
+        <div class="touches"><span class="label">Toca</span><code>TicketTable.js</code><code>TicketHistoryTable.js</code></div>
+      </div>
+
+      <div class="card">
+        <div class="card-top"><span class="card-id">US-FE-019</span><span class="pill pending">candidata</span></div>
+        <h3>Ver un indicador de carga consistente</h3>
+        <p class="narrative">Como <span class="role">usuario</span>, quiero un estado de carga claro mientras se guarda una asignación o un cambio de estado, para no hacer doble clic pensando que no funcionó.</p>
+        <div class="touches"><span class="label">Toca</span><code>TicketTable.js</code></div>
+      </div>
+
+    </div>
+  </section>
+
+  <footer>
+    Backlog derivado del desarrollo real de <code>Backend/soporte-ai/frontend/dashboard</code>.
+    <div class="doc-links">
+      <a href="arquitectura.html">Arquitectura</a>
+      <a href="historias-usuario-backend.html">HU Backend</a>
+      <a href="historias-usuario-basedatos.html">HU Base de Datos</a>
+    </div>
+  </footer>
+
+</div>
+</body>
+</html>
