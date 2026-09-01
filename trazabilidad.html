@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Trazabilidad End-to-End</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  :root {
+    --bg: #F1F3F4;
+    --surface: #FFFFFF;
+    --surface-2: #E7EAEC;
+    --ink: #1B2430;
+    --ink-soft: #56636E;
+    --border: #CBD2D6;
+    --accent: #0E7C86;
+    --accent-soft: #DCEEF0;
+    --amber: #B45F14;
+    --amber-soft: #F4E3CC;
+    --success: #2E7D4F;
+    --success-soft: #DCEEE0;
+    --font-display: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+    --font-body: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+    --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #10151A;
+      --surface: #1A222A;
+      --surface-2: #212B34;
+      --ink: #E7ECEE;
+      --ink-soft: #96A4AE;
+      --border: #303C46;
+      --accent: #55D6DE;
+      --accent-soft: #163338;
+      --amber: #E3963F;
+      --amber-soft: #3A2C1C;
+      --success: #5FCE8B;
+      --success-soft: #16321F;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --bg: #10151A;
+    --surface: #1A222A;
+    --surface-2: #212B34;
+    --ink: #E7ECEE;
+    --ink-soft: #96A4AE;
+    --border: #303C46;
+    --accent: #55D6DE;
+    --accent-soft: #163338;
+    --amber: #E3963F;
+    --amber-soft: #3A2C1C;
+    --success: #5FCE8B;
+    --success-soft: #16321F;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body { margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-body);
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .page {
+    max-width: 1040px;
+    margin: 0 auto;
+    padding: 56px 24px 80px;
+  }
+
+  .prose { max-width: 720px; }
+
+  header.prose { margin-bottom: 28px; }
+
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0 0 10px;
+  }
+
+  h1 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: clamp(28px, 4vw, 36px);
+    letter-spacing: -0.01em;
+    margin: 0 0 12px;
+    text-wrap: balance;
+  }
+
+  .dek {
+    font-size: 16px;
+    color: var(--ink-soft);
+    margin: 0;
+    max-width: 68ch;
+  }
+
+  .stats {
+    display: flex;
+    gap: 12px;
+    margin: 28px 0 8px;
+    flex-wrap: wrap;
+  }
+
+  .stat {
+    flex: 1 1 130px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+  }
+
+  .stat .n {
+    font-family: var(--font-mono);
+    font-size: 24px;
+    font-weight: 500;
+    line-height: 1;
+  }
+
+  .stat.built .n { color: var(--success); }
+  .stat.staged .n { color: var(--accent); }
+  .stat.pending .n { color: var(--amber); }
+
+  .stat .l {
+    font-size: 12px;
+    color: var(--ink-soft);
+    margin-top: 6px;
+  }
+
+  .legend {
+    display: flex;
+    gap: 18px;
+    flex-wrap: wrap;
+    font-size: 12.5px;
+    color: var(--ink-soft);
+    margin: 20px 0 0;
+  }
+
+  .legend span { display: inline-flex; align-items: center; gap: 6px; }
+
+  .dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+  .dot.built { background: var(--success); }
+  .dot.staged { background: var(--accent); }
+  .dot.pending { background: var(--amber); }
+
+  section.flow {
+    margin-top: 40px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 22px 24px;
+  }
+
+  section.flow.transversal { background: transparent; border-style: dashed; }
+
+  .flow-head {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    margin-bottom: 4px;
+  }
+
+  .flow-num {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--accent);
+    background: var(--accent-soft);
+    border-radius: 6px;
+    padding: 2px 8px;
+  }
+
+  h2 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 19px;
+    margin: 0;
+    letter-spacing: -0.005em;
+  }
+
+  .flow-hint {
+    color: var(--ink-soft);
+    font-size: 14px;
+    margin: 4px 0 16px;
+    max-width: 68ch;
+  }
+
+  .lane {
+    display: grid;
+    grid-template-columns: 96px 1fr;
+    gap: 12px;
+    align-items: start;
+    padding: 8px 0;
+    border-top: 1px solid var(--border);
+  }
+
+  .lane:first-of-type { border-top: none; }
+
+  .lane-label {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    color: var(--ink-soft);
+    padding-top: 4px;
+  }
+
+  .chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12.5px;
+    padding: 4px 10px 4px 8px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    text-decoration: none;
+    color: var(--ink);
+    background: var(--surface-2);
+  }
+
+  .chip:hover { border-color: var(--accent); }
+
+  .chip .id {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ink-soft);
+  }
+
+  .chip.built .dot { background: var(--success); }
+  .chip.staged .dot { background: var(--accent); }
+  .chip.pending .dot { background: var(--amber); }
+
+  .flow-note {
+    margin: 14px 0 0;
+    font-size: 13.5px;
+    color: var(--ink-soft);
+    font-style: italic;
+  }
+
+  .insight {
+    margin-top: 40px;
+    background: var(--accent-soft);
+    border: 1px solid var(--accent);
+    border-radius: 14px;
+    padding: 22px 24px;
+  }
+
+  .insight h2 { color: var(--accent); }
+
+  .insight p { font-size: 14.5px; margin: 10px 0 0; max-width: 68ch; }
+
+  footer {
+    margin-top: 56px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+    font-size: 12.5px;
+    color: var(--ink-soft);
+  }
+
+  footer a { color: var(--accent); }
+  footer .doc-links { display: flex; gap: 16px; margin-top: 6px; flex-wrap: wrap; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header class="prose">
+    <p class="eyebrow">Trazabilidad · las 3 capas juntas</p>
+    <h1>Trazabilidad End-to-End</h1>
+    <p class="dek">Las 57 historias de <a href="historias-usuario-frontend.html" style="color:var(--accent)">frontend</a>, <a href="historias-usuario-backend.html" style="color:var(--accent)">backend</a> y <a href="historias-usuario-basedatos.html" style="color:var(--accent)">base de datos</a>, pero organizadas por el recorrido real de un ticket en vez de por capa — para ver de un vistazo qué tan completo está cada flujo, no solo cada capa por separado.</p>
+
+    <div class="legend">
+      <span><span class="dot built"></span> construida y viva</span>
+      <span><span class="dot staged"></span> en schema.sql, sin migrar a la base de desarrollo</span>
+      <span><span class="dot pending"></span> candidata sin resolver</span>
+    </div>
+  </header>
+
+  <div class="stats">
+    <div class="stat"><div class="n">57</div><div class="l">historias en total</div></div>
+    <div class="stat built"><div class="n">30</div><div class="l">construidas y vivas</div></div>
+    <div class="stat staged"><div class="n">9</div><div class="l">en schema.sql, sin migrar</div></div>
+    <div class="stat pending"><div class="n">18</div><div class="l">candidatas sin resolver</div></div>
+  </div>
+
+  <section class="flow">
+    <div class="flow-head"><span class="flow-num">1</span><h2>Iniciar sesión y llegar a mi espacio de trabajo</h2></div>
+    <p class="flow-hint">El rol se decide una sola vez, al loguearse, y desde ahí el cliente muestra Dashboard o Mis Tickets.</p>
+
+    <div class="lane">
+      <span class="lane-label">Frontend</span>
+      <div class="chips">
+        <a class="chip built" href="historias-usuario-frontend.html#US-FE-001"><span class="dot"></span><span class="id">FE-001</span> Identificarme</a>
+        <a class="chip built" href="historias-usuario-frontend.html#US-FE-002"><span class="dot"></span><span class="id">FE-002</span> Enrutar por rol</a>
+        <a class="chip built" href="historias-usuario-frontend.html#US-FE-003"><span class="dot"></span><span class="id">FE-003</span> Cerrar sesión</a>
+        <a class="chip pending" href="historias-usuario-frontend.html#US-FE-004"><span class="dot"></span><span class="id">FE-004</span> Password real</a>
+        <a class="chip pending" href="historias-usuario-frontend.html#US-FE-005"><span class="dot"></span><span class="id">FE-005</span> Persistir sesión</a>
+      </div>
+    </div>
+    <div class="lane">
+      <span class="lane-label">Backend</span>
+      <div class="chips">
+        <a class="chip built" href="historias-usuario-backend.html#US-BE-005"><span class="dot"></span><span class="id">BE-005</span> POST /login</a>
+        <a class="chip built" href="historias-usuario-backend.html#US-BE-006"><span class="dot"></span><span class="id">BE-006</span> GET /users?role=</a>
+        <a class="chip pending" href="historias-usuario-backend.html#US-BE-007"><span class="dot"></span><span class="id">BE-007</span> Validar password</a>
+        <a class="chip pending" href="historias-usuario-backend.html#US-BE-008"><span class="dot"></span><span class="id">BE-008</span> Autorización server-side</a>
+      </div>
+    </div>
+    <div class="lane">
+      <span class="lane-label">Base de datos</span>
+      <div class="chips">
+        <a class="chip built" href="historias-usuario-basedatos.html#US-DB-001"><span class="dot"></span><span class="id">DB-001</span> tabla users</a>
+        <a class="chip staged" href="historias-usuario-basedatos.html#US-DB-006"><span class="dot"></span><span class="id">DB-006</span> CHECK role</a>
+        <a class="chip staged" href="historias-usuario-basedatos.html#US-DB-007"><span class="dot"></span><span class="id">DB-007</span> UNIQUE email</a>
+        <a class="chip staged" href="historias-usuario-basedatos.html#US-DB-009"><span class="dot"></span><span class="id">DB-009</span> password_hash</a>
+      </div>
+    </div>
+    <p class="flow-note">El hueco se repite en las tres capas en el mismo punto exacto: nadie valida contraseña real todavía, aunque la base ya tiene dónde guardarla.</p>
+  </section>
+
+  <section class="flow">
+    <div class="flow-head"><span class="flow-num">2</span><h2>Crear un ticket (clasificado y priorizado por IA)</h2></div>
+    <p class="flow-hint">El punto más desbalanceado del sistema: backend y base de datos están listos, el frontend no tiene cómo dispararlo.</p>
+
+    <div class="lane">
+      <span class="lane-label">Frontend</span>
+      <div class="chips">
+        <a class="chip pending" href="historias-usuario-frontend.html#US-FE-010"><span class="dot"></span><span class="id">FE-010</span> Formulario de creación</a>
+      </div>
+    </div>
+    <div class="lane">
+      <span class="lane-label">Backend</span>
+      <div class="chips">
+        <a class="chip built" href="historias-usuario-backend.html#US-BE-009"><span class="dot"></span><span class="id">BE-009</span> POST /tickets</a>
+        <a class="chip built" href="historias-usuario-backend.html#US-BE-015"><span class="dot"></span><span class="id">BE-015</span> Clasificación IA</a>
+        <a class="chip built" href="historias-usuario-backend.html#US-BE-016"><span class="dot"></span><span class="id">BE-016</span> Cálculo de prioridad</a>
+        <a class="chip pending" href="historias-usuario-backend.html#US-BE-017"><span class="dot"></span><span class="id">BE-017</span> Timeout de IA</a>
+        <a class="chip pending" href="historias-usuario-backend.html#US-BE-018"><span class="dot"></span><span class="id">BE-018</span> Pesos configurables</a>
+      </div>
+    </div>
+    <div class="lane">
+      <span class="lane-label">Base de datos</span>
+      <div class="chips">
+        <a class="chip built" href="historias-usuario-basedatos.html#US-DB-002"><span class="dot"></span><span class="id">DB-002</span> tabla tickets</a>
+        <a class="chip built" href="historias-usuario-basedatos.html#US-DB-008"><span class="dot"></span><span class="id">DB-008</span> created_by sincronizado</a>
+        <a class="chip staged" href="historias-usuario-basedatos.html#US-DB-011"><span class="dot"></span><span class="id">DB-011</span> índices de tickets</a>
+      </div>
+    </div>
+    <p class="flow-note">La API ya sabe crear un ticket completo end-to-end (mensaje → IA → prioridad → INSERT) — solo se ha probado por curl, nunca desde un formulario real.</p>
+  </section>
+
+  <section class="flow">
+    <div class="flow-head"><span class="flow-num">3</span><h2>Ver y priorizar tickets</h2></div>
+    <p class="flow-hint">Listar lo que sigue activo, con la prioridad y el estado legibles de un vistazo.</p>
+
+    <div class="lane">
+      <span class="lane-label">Frontend</span>
+      <div class="chips">
+        <a class="chip built" href="historias-usuario-frontend.html#US-FE-006"><span class="dot"></span><span class="id">FE-006</span> Ver tickets activos</a>
+        <a class="chip built" href="historias-usuario-frontend.html#US-FE-016"><span class="dot"></span><span class="id">FE-016</span> Chips de prioridad/estado</a>
+        <a class="chip built" href="historias-usuario-frontend.html#US-FE-017"><span class="dot"></span><span class="id">FE-017</span> Detalle SAP</a>
+      </div>
+    </div>
+    <div class="lane">
+      <span class="lane-label">Backend</span>
+      <div class="chips">
+        <a class="chip built" href="historias-usuario-backend.html#US-BE-010"><span class="dot"></span><span class="id">BE-010</span> GET /tickets</a>
+        <a class="chip pending" href="historias-usuario-backend.html#US-BE-014"><span class="dot"></span><span class="id">BE-014</span> Filtrar/paginar en servidor</a>
+      </div>
+    </div>
+    <div class="lane">
+      <span class="lane-label">Base de datos</span>
+      <div class="chips">
+        <a class="chip staged" href="historias-usuario-basedatos.html#US-DB-011"><span class="dot"></span><span class="id">DB-011</span> índices status/assigned_to/priority</a>
+      </div>
+    </div>
+    <p class="flow-note">Hoy el filtrado (por estado, por asignado) lo hace el navegador con la tabla completa — funciona porque la base es chica; BE-014 y DB-011 son la misma limitación vista desde dos capas.</p>
+  </section>
+
+  <section class="flow">
+    <div class="flow-head"><span class="flow-num">4</span><h2>Asignar un ticket a un agente</h2></div>
+    <p class="flow-hint">El administrador reparte trabajo; el frontend ya no le deja tocar el estado después.</p>
+
+    <div class="lane">
+      <span class="lane-label">Frontend</span>
+      <div class="chips">
+        <a class="chip built" href="historias-usuario-frontend.html#US-FE-007"><span class="dot"></span><span class="id">FE-007</span> Asignar</a>
+        <a class="chip built" href="historias-usuario-frontend.html#US-FE-008"><span class="dot"></span><span class="id">FE-008</span> Ocultar botón tras asignar</a>
+        <a class="chip pending" href="historias-usuario-frontend.html#US-FE-011"><span class="dot"></span><span class="id">FE-011</span> Reasignar</a>
+      </div>
+    </div>
+    <div class="lane">
+      <span class="lane-label">Backend</span>
+      <div class="chips">
+        <a class="chip built" href="historias-usuario-backend.html#US-BE-012"><span class="dot"></span><span class="id">BE-012</span> PUT /tickets/{id}/assign</a>
+        <a class="chip pending" href="historias-usuario-backend.html#US-BE-013"><span class="dot"></span><span class="id">BE-013</span> Validar que el usuario exista</a>
+      </div>
+    </div>
+    <div class="lane">
+      <span class="lane-label">Base de datos</span>
+      <div class="chips">
+        <a class="chip staged" href="historias-usuario-basedatos.html#US-DB-004"><span class="dot"></span><span class="id">DB-004</span> FK assigned_to → users.id</a>
+      </div>
+    </div>
+    <p class="flow-note">BE-013 sigue siendo candidata solo porque DB-004 (la FK que la resolvería gratis) no está migrada — el día que se aplique el schema, esa validación empieza a pasar sola.</p>
+  </section>
+
+  <section class="flow">
+    <div class="flow-head"><span class="flow-num">5</span><h2>Tomar y trabajar un ticket (mi bandeja)</h2></div>
+    <p class="flow-hint">Una vez asignado, el agente maneja su propio ciclo de estado desde "Mis Tickets".</p>
+
+    <div class="lane">
+      <span class="lane-label">Frontend</span>
+      <div class="chips">
+        <a class="chip built" href="historias-usuario-frontend.html#US-FE-012"><span class="dot"></span><span class="id">FE-012</span> Ver solo lo mío</a>
+        <a class="chip built" href="historias-usuario-frontend.html#US-FE-013"><span class="dot"></span><span class="id">FE-013</span> Tomar ticket</a>
+        <a class="chip pending" href="historias-usuario-frontend.html#US-FE-015"><span class="dot"></span><span class="id">FE-015</span> Mensaje si no tengo nada</a>
+      </div>
+    </div>
+    <div class="lane">
+      <span class="lane-label">Backend</span>
+      <div class="chips">
+        <a class="chip built" href="historias-usuario-backend.html#US-BE-011"><span class="dot"></span><span class="id">BE-011</span> PUT /tickets/{id} validado</a>
+      </div>
+    </div>
+    <div class="lane">
+      <span class="lane-label">Base de datos</span>
+      <div class="chips">
+        <a class="chip staged" href="historias-usuario-basedatos.html#US-DB-005"><span class="dot"></span><span class="id">DB-005</span> CHECK status</a>
+        <a class="chip staged" href="historias-usuario-basedatos.html#US-DB-014"><span class="dot"></span><span class="id">DB-014</span> updated_at automático</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="flow">
+    <div class="flow-head"><span class="flow-num">6–7</span><h2>Finalizar, archivar y consultar el historial</h2></div>
+    <p class="flow-hint">El flujo más completo de punta a punta: las tres capas están construidas o listas para migrar.</p>
+
+    <div class="lane">
+      <span class="lane-label">Frontend</span>
+      <div class="chips">
+        <a class="chip built" href="historias-usuario-frontend.html#US-FE-014"><span class="dot"></span><span class="id">FE-014</span> Finalizar</a>
+        <a class="chip built" href="historias-usuario-frontend.html#US-FE-009"><span class="dot"></span><span class="id">FE-009</span> Historial (admin)</a>
+        <a class="chip built" href="historias-usuario-frontend.html#US-FE-012"><span class="dot"></span><span class="id">FE-012</span> Pestaña "finalizados"</a>
+      </div>
+    </div>
+    <div class="lane">
+      <span class="lane-label">Backend</span>
+      <div class="chips">
+        <a class="chip built" href="historias-usuario-backend.html#US-BE-019"><span class="dot"></span><span class="id">BE-019</span> Archivar + borrar en DONE</a>
+        <a class="chip built" href="historias-usuario-backend.html#US-BE-020"><span class="dot"></span><span class="id">BE-020</span> GET /tickets/history</a>
+      </div>
+    </div>
+    <div class="lane">
+      <span class="lane-label">Base de datos</span>
+      <div class="chips">
+        <a class="chip built" href="historias-usuario-basedatos.html#US-DB-003"><span class="dot"></span><span class="id">DB-003</span> tabla ticket_history</a>
+        <a class="chip staged" href="historias-usuario-basedatos.html#US-DB-012"><span class="dot"></span><span class="id">DB-012</span> índices de historial</a>
+        <a class="chip staged" href="historias-usuario-basedatos.html#US-DB-013"><span class="dot"></span><span class="id">DB-013</span> action como JSON</a>
+      </div>
+    </div>
+    <p class="flow-note">Solo falta migrar la base viva para poder consultar el historial por campo (<code>JSON_EXTRACT</code>) en vez de traer todo el texto.</p>
+  </section>
+
+  <section class="flow transversal">
+    <div class="flow-head"><h2>Infraestructura base</h2></div>
+    <p class="flow-hint">No es un flujo de usuario — sostiene a todos por igual.</p>
+    <div class="chips">
+      <a class="chip built" href="historias-usuario-backend.html#US-BE-001"><span class="dot"></span><span class="id">BE-001</span> CORS</a>
+      <a class="chip built" href="historias-usuario-backend.html#US-BE-002"><span class="dot"></span><span class="id">BE-002</span> Credenciales en .env</a>
+      <a class="chip built" href="historias-usuario-backend.html#US-BE-003"><span class="dot"></span><span class="id">BE-003</span> Healthcheck</a>
+      <a class="chip built" href="historias-usuario-basedatos.html#US-DB-016"><span class="dot"></span><span class="id">DB-016</span> utf8mb4 explícito</a>
+    </div>
+  </section>
+
+  <section class="flow transversal">
+    <div class="flow-head"><h2>Transversal — seguridad</h2></div>
+    <div class="chips">
+      <a class="chip pending" href="historias-usuario-backend.html#US-BE-007"><span class="dot"></span><span class="id">BE-007</span> Validar password</a>
+      <a class="chip pending" href="historias-usuario-backend.html#US-BE-008"><span class="dot"></span><span class="id">BE-008</span> Autorización server-side</a>
+      <a class="chip staged" href="historias-usuario-basedatos.html#US-DB-009"><span class="dot"></span><span class="id">DB-009</span> password_hash</a>
+      <a class="chip pending" href="historias-usuario-basedatos.html#US-DB-010"><span class="dot"></span><span class="id">DB-010</span> Usuario MySQL mínimo privilegio</a>
+    </div>
+  </section>
+
+  <section class="flow transversal">
+    <div class="flow-head"><h2>Transversal — calidad y mantenibilidad</h2></div>
+    <div class="chips">
+      <a class="chip pending" href="historias-usuario-backend.html#US-BE-004"><span class="dot"></span><span class="id">BE-004</span> Tests automatizados</a>
+      <a class="chip pending" href="historias-usuario-backend.html#US-BE-021"><span class="dot"></span><span class="id">BE-021</span> Unificar SQLAlchemy/mysql-connector</a>
+      <a class="chip pending" href="historias-usuario-backend.html#US-BE-022"><span class="dot"></span><span class="id">BE-022</span> Auditoría de estado y asignación</a>
+      <a class="chip pending" href="historias-usuario-basedatos.html#US-DB-015"><span class="dot"></span><span class="id">DB-015</span> Migraciones versionadas</a>
+    </div>
+  </section>
+
+  <section class="flow transversal">
+    <div class="flow-head"><h2>Transversal — experiencia de error y carga</h2></div>
+    <div class="chips">
+      <a class="chip pending" href="historias-usuario-frontend.html#US-FE-018"><span class="dot"></span><span class="id">FE-018</span> Feedback de error visible</a>
+      <a class="chip pending" href="historias-usuario-frontend.html#US-FE-019"><span class="dot"></span><span class="id">FE-019</span> Indicador de carga consistente</a>
+    </div>
+  </section>
+
+  <div class="insight">
+    <h2>Lectura rápida</h2>
+    <p>De las 57 historias, el patrón más claro es que <strong>el hueco casi nunca es de una sola capa</strong> — es la misma idea vista desde tres ángulos (ej. "seguridad del login" = frontend sin persistencia + backend sin validar password + base de datos con la columna lista pero sin usar). Si hubiera que priorizar un solo esfuerzo, cerrar el <strong>Flujo 1</strong> (login real) resolvería 3 de frontend + 2 de backend + 3 de base de datos de un tiro, porque las piezas ya están construidas esperándose entre sí.</p>
+  </div>
+
+  <footer>
+    Vista de trazabilidad cruzada sobre los backlogs de <code>historias-usuario-frontend.html</code>, <code>historias-usuario-backend.html</code> y <code>historias-usuario-basedatos.html</code>.
+    <div class="doc-links">
+      <a href="arquitectura.html">Arquitectura</a>
+      <a href="historias-usuario-frontend.html">HU Frontend</a>
+      <a href="historias-usuario-backend.html">HU Backend</a>
+      <a href="historias-usuario-basedatos.html">HU Base de Datos</a>
+    </div>
+  </footer>
+
+</div>
+</body>
+</html>
