@@ -2,8 +2,8 @@ import json
 
 from fastapi import APIRouter, HTTPException
 
-from app.db.database import get_connection
-from app.services.ai_service import analyze_ticket
+from app.db.database import get_connection, row_to_dict, rows_to_list
+from app.services.ai_services import analyze_ticket
 from app.services.prioritization import calculate_priority
 from app.services.ticket_service import create_ticket_db
 
@@ -21,25 +21,22 @@ ALLOWED_STATUSES = {"OPEN", "IN_PROGRESS", "DONE"}
 
 @router.post("/tickets")
 def create_ticket(data: dict):
-    message = data.get("data")
+    message = data.get("message")
     if not message:
-        raise HTTPException(status_code=400, detail="El campo 'data' es requerido")
+        raise HTTPException(status_code=400, detail="El campo 'message' es requerido")
 
     created_by = data.get("created_by", "desconocido")
 
-    # 1. Análisis con IA (con fallback si la IA falla o responde algo no parseable)
     try:
         parsed = json.loads(analyze_ticket(message))
     except Exception:
         parsed = FALLBACK_ANALYSIS
 
-    # 2. Prioridad
     priority = calculate_priority(
         parsed.get("urgencia", FALLBACK_ANALYSIS["urgencia"]),
         parsed.get("impacto", FALLBACK_ANALYSIS["impacto"]),
     )
 
-    # 3. INSERT en MySQL
     ticket = create_ticket_db({
         "title": message[:50],
         "description": message,
@@ -60,10 +57,10 @@ def create_ticket(data: dict):
 def get_tickets():
     try:
         conn = get_connection()
-        cursor = conn.cursor(dictionary=True)
+        cursor = conn.cursor()
 
         cursor.execute("SELECT * FROM tickets ORDER BY priority DESC")
-        tickets = cursor.fetchall()
+        tickets = rows_to_list(cursor, cursor.fetchall())
 
         cursor.close()
         conn.close()
@@ -78,10 +75,10 @@ def get_tickets():
 def get_ticket_history():
     try:
         conn = get_connection()
-        cursor = conn.cursor(dictionary=True)
+        cursor = conn.cursor()
 
         cursor.execute("SELECT * FROM ticket_history ORDER BY created_at DESC")
-        rows = cursor.fetchall()
+        rows = rows_to_list(cursor, cursor.fetchall())
 
         cursor.close()
         conn.close()
@@ -111,10 +108,10 @@ def _archive_and_delete_ticket(cursor, ticket: dict):
     """Guarda una foto del ticket en ticket_history y lo borra de tickets."""
     snapshot = json.dumps({"event": "DONE_DELETED", "ticket": ticket}, default=str)
     cursor.execute(
-        "INSERT INTO ticket_history (ticket_id, action) VALUES (%s, %s)",
+        "INSERT INTO ticket_history (ticket_id, action) VALUES (?, ?)",
         (ticket["id"], snapshot),
     )
-    cursor.execute("DELETE FROM tickets WHERE id = %s", (ticket["id"],))
+    cursor.execute("DELETE FROM tickets WHERE id = ?", (ticket["id"],))
 
 
 @router.put("/tickets/{ticket_id}")
@@ -128,22 +125,20 @@ def update_ticket_status(ticket_id: int, data: dict):
 
     conn = get_connection()
     try:
-        cursor = conn.cursor(dictionary=True)
+        cursor = conn.cursor()
 
-        cursor.execute("SELECT * FROM tickets WHERE id = %s", (ticket_id,))
-        ticket = cursor.fetchone()
+        cursor.execute("SELECT * FROM tickets WHERE id = ?", (ticket_id,))
+        ticket = row_to_dict(cursor, cursor.fetchone())
 
         if not ticket:
             raise HTTPException(status_code=404, detail="Ticket no encontrado")
 
         if new_status == "DONE":
-            # Al finalizar, el ticket se archiva en ticket_history y se elimina
-            # de tickets (por eso desaparece del dashboard).
             _archive_and_delete_ticket(cursor, ticket)
             message = "Ticket finalizado y movido a ticket_history"
         else:
             cursor.execute(
-                "UPDATE tickets SET status = %s WHERE id = %s",
+                "UPDATE tickets SET status = ? WHERE id = ?",
                 (new_status, ticket_id),
             )
             message = f"Ticket actualizado a {new_status}"
@@ -174,7 +169,7 @@ def assign_ticket(ticket_id: int, data: dict):
         cursor = conn.cursor()
 
         cursor.execute(
-            "UPDATE tickets SET assigned_to = %s WHERE id = %s",
+            "UPDATE tickets SET assigned_to = ? WHERE id = ?",
             (assigned_to, ticket_id),
         )
         conn.commit()

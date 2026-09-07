@@ -1,7 +1,8 @@
 fastapi==0.141.1
 uvicorn==0.52.1
 SQLAlchemy==2.0.51
-PyMySQL==1.2.0
-mysql-connector-python==26.7.0
+pyodbc==5.1.0
 openai==0.28.0
 python-dotenv==1.2.2
+passlib==1.7.4
+bcrypt==4.0.1
