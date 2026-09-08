@@ -29,6 +29,44 @@ def get_users(role: str | None = None):
         return {"success": False, "message": str(e)}
 
 
+@router.post("/users")
+def create_user(data: dict):
+    name = (data.get("name") or "").strip()
+    email = (data.get("email") or "").strip()
+    password = (data.get("password") or "").strip()
+    role = (data.get("role") or "user").strip()
+
+    if not name or not email or not password:
+        raise HTTPException(
+            status_code=400, 
+            detail="Nombre, correo y contraseña son obligatorios"
+        )
+
+    # El backend genera el hash automáticamente de forma segura
+    password_hash = pwd_context.hash(password)
+
+    try:
+        conn = get_connection()
+        cursor = conn.cursor()
+
+        cursor.execute(
+            "INSERT INTO users (name, email, password_hash, role) VALUES (?, ?, ?, ?)",
+            (name, email, password_hash, role)
+        )
+        conn.commit()
+        
+        cursor.close()
+        conn.close()
+
+        return {
+            "success": True, 
+            "message": "Usuario creado exitosamente con contraseña encriptada"
+        }
+
+    except Exception as e:
+        return {"success": False, "message": str(e)}
+
+
 @router.post("/login")
 def login(data: dict):
     username = (data.get("username") or data.get("name") or "").strip()
