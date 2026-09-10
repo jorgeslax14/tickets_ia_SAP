@@ -12,13 +12,25 @@ def get_users(role: str | None = None):
         conn = get_connection()
         cursor = conn.cursor()
 
+        # Usamos JOIN con la tabla roles para obtener el nombre del rol (ej. 'admin' o 'user')
         if role:
             cursor.execute(
-                "SELECT id, name, email, role FROM users WHERE role = ?",
+                """
+                SELECT u.id, u.name, u.email, r.name as role 
+                FROM Users u
+                JOIN roles r ON u.role_id = r.id
+                WHERE r.name = ?
+                """,
                 (role,),
             )
         else:
-            cursor.execute("SELECT id, name, email, role FROM users")
+            cursor.execute(
+                """
+                SELECT u.id, u.name, u.email, r.name as role 
+                FROM Users u
+                JOIN roles r ON u.role_id = r.id
+                """
+            )
 
         users = rows_to_list(cursor, cursor.fetchall())
 
@@ -34,7 +46,9 @@ def create_user(data: dict):
     name = (data.get("name") or "").strip()
     email = (data.get("email") or "").strip()
     password = (data.get("password") or "").strip()
-    role = (data.get("role") or "user").strip()
+    
+    # Recibimos el role_id numérico (por defecto 2 para 'user', o el que envíen)
+    role_id = data.get("role_id") or 2
 
     if not name or not email or not password:
         raise HTTPException(
@@ -50,8 +64,8 @@ def create_user(data: dict):
         cursor = conn.cursor()
 
         cursor.execute(
-            "INSERT INTO users (name, email, password_hash, role) VALUES (?, ?, ?, ?)",
-            (name, email, password_hash, role)
+            "INSERT INTO Users (name, email, password_hash, role_id) VALUES (?, ?, ?, ?)",
+            (name, email, password_hash, role_id)
         )
         conn.commit()
         
@@ -79,8 +93,14 @@ def login(data: dict):
         conn = get_connection()
         cursor = conn.cursor()
 
+        # Realizamos el JOIN con roles para extraer el nombre del rol asociado al usuario
         cursor.execute(
-            "SELECT TOP 1 id, name, email, password_hash, role FROM users WHERE name = ? OR email = ?",
+            """
+            SELECT TOP 1 u.id, u.name, u.email, u.password_hash, r.name as role 
+            FROM Users u
+            JOIN roles r ON u.role_id = r.id
+            WHERE u.name = ? OR u.email = ?
+            """,
             (username, username),
         )
         user = row_to_dict(cursor, cursor.fetchone())

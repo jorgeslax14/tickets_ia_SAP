@@ -9,9 +9,9 @@ def create_ticket_db(data: dict):
         title=data.get("title"),
         description=data.get("description"),
         module=data.get("module"),
-        transaction_code=data.get("transaction"),
-        priority=data.get("priority"),
-        status="OPEN",
+        transaction_code=data.get("transaction_code"),
+        priority_id=data.get("priority_id"),
+        status_id=data.get("status_id"),
         created_by=data.get("created_by")
     )
 
