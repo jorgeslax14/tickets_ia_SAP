@@ -83,7 +83,7 @@ def create_ticket(data: dict):
 
     return {
         "status": "OK",
-        "ticket_id": getattr(ticket, "id", ticket.get("id")),
+        "ticket_id": ticket.id,
         "priority_id": priority_id,
     }
 
@@ -243,5 +243,3 @@ def assign_ticket(
         raise
     except Exception as e:
         return {"success": False, "message": str(e)}
-        conn.rollback()
-        conn.close()
