@@ -22,12 +22,16 @@ const Login = ({ onLogin }) => {
     setSubmitting(true);
 
     try {
-      // Busca el usuario en la tabla `users` y toma su rol de ahí.
-      // Nota: todavía no hay columna de contraseña en la BD, así que esto
-      // no valida credenciales reales, solo identifica al usuario.
-      const res = await login(username);
-      const user = res.data.data;
-      onLogin({ id: user.id, username: user.name, role: user.role });
+      const res = await login(username, password);
+      
+      // Manejo seguro por si el backend devuelve el objeto directo o envuelto en .data
+      const user = res.data.data || res.data;
+      
+      onLogin({ 
+        id: user.id, 
+        username: user.name || user.username, 
+        role: user.role || user.role_id 
+      });
     } catch (err) {
       setError(err.response?.data?.detail || "No se pudo validar el usuario");
     } finally {
@@ -55,7 +59,7 @@ const Login = ({ onLogin }) => {
 
         <form onSubmit={handleSubmit}>
           <TextField
-            label="Usuario"
+            label="Usuario / Correo"
             fullWidth
             margin="normal"
             value={username}

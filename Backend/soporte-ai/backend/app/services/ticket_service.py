@@ -1,30 +1,29 @@
 from app.db.database import SessionLocal
 from app.models.ticket import Ticket
 
+
 def create_ticket_db(data: dict):
     db = SessionLocal()
 
+    ticket_data = dict(
+        title=data.get("title"),
+        description=data.get("description"),
+        module=data.get("module"),
+        transaction_code=data.get("transaction_code"),
+        priority_id=data.get("priority_id"),
+        status_id=data.get("status_id"),
+        created_by=data.get("created_by")
+    )
+
     try:
-        new_ticket = Ticket(
-            title=data.get("title"),
-            description=data.get("description"),
-            module=data.get("module"),
-            transaction_code=data.get("transaction"),
-            priority=data.get("priority"),
-            status="OPEN",
-            created_by=data.get("created_by")
-        )
-
-        db.add(new_ticket)
+        ticket = Ticket(**ticket_data)
+        db.add(ticket)
         db.commit()
-        db.refresh(new_ticket)
-
-        return new_ticket
-
-    except Exception as e:
+        db.refresh(ticket)
+        return ticket
+    except Exception as error:
         db.rollback()
-        print("❌ Error insertando ticket:", e)
-        raise e
-
+        print("❌ Error creando ticket en SQL Server:", error)
+        raise error
     finally:
         db.close()

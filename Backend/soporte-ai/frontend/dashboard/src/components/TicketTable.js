@@ -40,9 +40,11 @@ export default function TicketTable({ statusFilter, compact = false, assignedTo 
   const fetchTickets = async () => {
     try {
       const res = await getTickets();
-      setTickets(res.data.data);
+      // Protegemos la respuesta para asegurar que siempre sea un array
+      setTickets(res.data.data || res.data || []);
     } catch (err) {
       console.error("Error cargando tickets:", err);
+      setTickets([]);
     } finally {
       setLoading(false);
     }
@@ -53,7 +55,7 @@ export default function TicketTable({ statusFilter, compact = false, assignedTo 
 
     if (!compact) {
       getUsersByRole("user")
-        .then(res => setAssignableUsers(res.data.data))
+        .then(res => setAssignableUsers(res.data.data || res.data || []))
         .catch(err => console.error("Error cargando usuarios asignables:", err));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -92,7 +94,9 @@ export default function TicketTable({ statusFilter, compact = false, assignedTo 
   if (loading) return <CircularProgress />;
 
   const allowedStatuses = Array.isArray(statusFilter) ? statusFilter : [statusFilter];
-  const visibleTickets = tickets
+  const safeTickets = Array.isArray(tickets) ? tickets : [];
+  
+  const visibleTickets = safeTickets
     .filter(ticket => !statusFilter || allowedStatuses.includes(ticket.status))
     .filter(ticket => assignedTo == null || ticket.assigned_to === assignedTo);
 
@@ -166,8 +170,6 @@ export default function TicketTable({ statusFilter, compact = false, assignedTo 
                     </Button>
                   )
                 ) : (
-                  // Una vez asignado, el estado lo maneja el usuario asignado
-                  // desde su propia pestaña "Mis Tickets", no desde aquí.
                   !ticket.assigned_to && (
                     <Button
                       variant="contained"

@@ -14,7 +14,7 @@ export const updateTicketStatus = (ticketId, status) =>
 
 export const getTicketHistory = () => API.get("/tickets/history");
 
-export const login = (username) => API.post("/login", { username });
+export const login = (username, password) => API.post("/login", { username, password });
 
 export const getUsersByRole = (role) => API.get("/users", { params: { role } });
 

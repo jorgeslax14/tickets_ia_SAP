@@ -11,6 +11,6 @@ class Ticket(Base):
     description = Column(Text)
     module = Column(String(50))
     transaction_code = Column(String(20))
-    priority = Column(Integer)
-    status = Column(String(50))
+    priority_id = Column(Integer)
+    status_id = Column(Integer)
     created_by = Column(String(50))
